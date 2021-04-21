@@ -105,7 +105,6 @@ const startTale = async tale => {
     await getPlayers(tale)
     await getCommunity(tale)
     await getSaga(tale)
-    console.log(tale)
   } catch (err) {
     console.error(err)
     let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
