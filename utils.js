@@ -46,7 +46,34 @@ const initTale = (guild, channel, state) => {
   return state[gid][cid]
 }
 
+/**
+ * Creates a string to mention one or more users.
+ * @param {User|User[]} user - A User object to create a mention for, or an
+ *   array of User objects to create mentions for.
+ * @returns {string} - A mention for a single user, or an Oxford
+ *   comma-separated list of mentions for an array of users, or an empty string
+ *   if not given valid input.
+ */
+
+const mention = user => {
+  if (user && user.id) {
+    return `<@!${user.id}>`
+  } else if (Array.isArray(user)) {
+    const mentions = user.filter(u => Boolean(u.id)).map(u => mention(u))
+    let users = mentions.pop()
+    if (mentions.length === 1) {
+      users = `${mentions[0]} and ${users}`
+    } else if (mentions.length > 1) {
+      users = `${mentions.join(', ')}, and ${users}`
+    }
+    return users
+  } else {
+    return ''
+  }
+}
+
 module.exports = {
   getPresent,
-  initTale
+  initTale,
+  mention
 }
