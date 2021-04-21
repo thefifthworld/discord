@@ -1,0 +1,130 @@
+{
+  "agenda": [
+    {
+      "text": "See the Fifth World together.",
+      "link": "/rpg/compendium/agenda/see"
+    },
+    {
+      "text": "Meet interesting people.",
+      "link": "/rpg/compendium/agenda/meet"
+    },
+    {
+      "text": "Hunt the wild story.",
+      "link": "/rpg/compendium/agenda/hunt"
+    }
+  ],
+  "corePrinciples": [
+    {
+      "text": "Rewild the domesticated.",
+      "link": "/rpg/compendium/principle/core/rewild"
+    },
+    {
+      "text": "Heed the spirit of the place.",
+      "link": "/rpg/compendium/principle/core/heed"
+    },
+    {
+      "text": "Tell us what you see.",
+      "link": "/rpg/compendium/principle/core/see"
+    },
+    {
+      "text": "Acknowledge everyone’s personhood.",
+      "link": "/rpg/compendium/principle/core/personhood"
+    },
+    {
+      "text": "Recognize relatable motivations.",
+      "link": "/rpg/compendium/principle/core/relatable"
+    },
+    {
+      "text": "Let people make their own decisions.",
+      "link": "/rpg/compendium/principle/core/decisions"
+    },
+    {
+      "text": "Begin and end with the Fifth World.",
+      "link": "/rpg/compendium/principle/core/story"
+    },
+    {
+      "text": "Ask questions and build on the answers.",
+      "link": "/rpg/compendium/principle/core/ask"
+    },
+    {
+      "text": "Care about the community.",
+      "link": "/rpg/compendium/principle/core/care"
+    }
+  ],
+  "cyclicPrinciples": {
+    "Introduction": {
+      "text": "Draw lines.",
+      "link": "/rpg/compendium/principle/cyclic/draw"
+    },
+    "Development": {
+      "text": "Defer answers.",
+      "link": "/rpg/compendium/principle/cyclic/defer"
+    },
+    "Contrast": {
+      "text": "Contrast what has happened with something unexpected.",
+      "link": "/rpg/compendium/principle/cyclic/contrast"
+    },
+    "Resolution": {
+      "text": "Weave a wide web of relationships.",
+      "link": "/rpg/compendium/principle/cyclic/weave"
+    }
+  },
+  "questions": {
+    "attentive": [
+      "/^What has happened here recently\\?$/gmi",
+      "^How does (.*?) really feel\\?$/gmi",
+      "/^What does (.*?) want me to do\\?$/gmi",
+      "/^How could I get (.*?) to (.*?)\\?/gmi",
+      "/^Who has agency here\\?$/gmi"
+    ]
+  },
+  "stages": [
+    "Introduction",
+    "Development",
+    "Contrast",
+    "Resolution"
+  ],
+  "lifeStages": [
+    {
+      "name": "Childhood",
+      "person": "Child",
+      "code": "child",
+      "max": 12,
+      "stage": "Introduction"
+    },
+    {
+      "name": "Young Adulthood",
+      "person": "Young Adult",
+      "code": "young",
+      "max": 36,
+      "stage": "Development"
+    },
+    {
+      "name": "Mature Adulthood",
+      "person": "Mature Adult",
+      "code": "mature",
+      "max": 72,
+      "stage": "Contrast"
+    },
+    {
+      "name": "Elderhood",
+      "person": "Elder",
+      "code": "elder",
+      "stage": "Resolution"
+    }
+  ],
+  "months": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ]
+}
