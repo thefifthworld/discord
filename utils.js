@@ -1,4 +1,40 @@
+const axios = require('axios')
+const { api } = require('./config.json')
 const { months, stages } = require('./data.json')
+
+/**
+ * Return structured date of given `type` from a page.
+ * @param {string} path - The path of the page to fetch.
+ * @param {string} type - The type of the structured data to fetch from that
+ *   page.
+ * @returns {Promise<object|null>} - A Promise that resolves with the data
+ *   requested or `null` if it could not be fetched.
+ */
+
+const load = async (path, type) => {
+  const res = await axios({ method: 'GET', url: `${api}/pages${path}` })
+  const filtered = res.data.data.filter(d => d.type === type)
+  return filtered.length > 0 ? filtered[0] : null
+}
+
+/**
+ * Return structured data from the children of a given page.
+ * @param {string} path - The path of the parent.
+ * @param {string} type - The types of children to fetch.
+ * @param {string} dataType - The type of the structured data to fetch from
+ *   those children.
+ * @returns {Promise<object[]>} - A Promise that resolves with the requested
+ *   structured data from each of the children of the given path that have the
+ *   given type.
+ */
+
+const loadChildren = async (path, type, dataType) => {
+  const res = await axios({ method: 'GET', url: `${api}/pages?ancestor=${encodeURIComponent(path)}&type=${type}` })
+  return res.data.map(page => {
+    const filtered = page.data.filter(d => d.type === dataType)
+    return filtered.length > 0 ? filtered[0] : null
+  }).filter(page => page !== null)
+}
 
 /**
  * Return the canonical "present" in the Fifth World (144,000 days, or one
@@ -73,6 +109,8 @@ const mention = user => {
 }
 
 module.exports = {
+  load,
+  loadChildren,
   getPresent,
   initTale,
   mention
