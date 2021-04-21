@@ -1,4 +1,7 @@
+const { minPlayers, maxPlayers } = require('../data.json')
+const { timeout } = require('../config.json')
 const rpStartWho = require('../embeds/rp-start-who')
+const rpStartNumPlayers = require('../embeds/rp-start-num')
 
 /**
  * Collect who will play in this tale.
@@ -9,6 +12,18 @@ const rpStartWho = require('../embeds/rp-start-who')
 
 const getPlayers = async tale => {
   await tale.channel.send({ embed: rpStartWho() })
+  try {
+    const collected = await tale.channel.awaitMessages(m => m.mentions.users.array().length > 0, { max: 1, time: timeout })
+    const players = collected.first().mentions.users.array()
+    if (players.length >= minPlayers && players.length <= maxPlayers) {
+      tale.players = players
+    } else {
+      await tale.channel.send({ embed: rpStartNumPlayers(players.length) })
+      await getPlayers(tale)
+    }
+  } catch (err) {
+    throw err
+  }
 }
 
 /**
@@ -20,6 +35,7 @@ const getPlayers = async tale => {
 const startTale = async tale => {
   try {
     await getPlayers(tale)
+    console.log(tale.players)
   } catch (err) {
     console.error(err)
     let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
