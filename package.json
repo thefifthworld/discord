@@ -1,0 +1,38 @@
+{
+  "name": "@thefifthworld/discord",
+  "description": "A bot to help you play The Fifth World tabletop roleplaying game over Discord.",
+  "version": "1.0.0",
+  "license": "CC-BY-SA-4.0",
+  "homepage": "https://github.com/thefifthworld/discord#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thefifthworld/discord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thefifthworld/discord/issues"
+  },
+  "author": {
+    "name": "The Fifth World",
+    "email": "dev@thefifthworld.com",
+    "url": "https://thefifthworld.com"
+  },
+  "contributors": [
+    {
+      "name": "Jason Godesky",
+      "email": "jason@thefifthworld.com"
+    }
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "discord.js": "^12.5.3",
+    "get-urls": "^10.0.0"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest"
+  }
+}
