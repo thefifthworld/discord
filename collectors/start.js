@@ -1,0 +1,32 @@
+const rpStartWho = require('../embeds/rp-start-who')
+
+/**
+ * Collect who will play in this tale.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves once an appropriate
+ *   number of players have signed up for the tale.
+ */
+
+const getPlayers = async tale => {
+  await tale.channel.send({ embed: rpStartWho() })
+}
+
+/**
+ * Collect all of the information from players needed to begin a tale.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves when the tale begins.
+ */
+
+const startTale = async tale => {
+  try {
+    await getPlayers(tale)
+  } catch (err) {
+    console.error(err)
+    let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
+      ? err.message.substr(12)
+      : 'Sorry, I timed out waiting for a response.'
+    tale.channel.send(`${txt} You can start over again with the ritual phrase, “**Let us dream together of the world to come.**”`)
+  }
+}
+
+module.exports = startTale
