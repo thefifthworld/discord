@@ -1,9 +1,11 @@
-const { minPlayers, maxPlayers } = require('../data.json')
+const { minPlayers, maxPlayers, stages } = require('../data.json')
 const { domain, timeout } = require('../config.json')
-const { load, loadChildren, mention } = require('../utils')
+const { load, loadChildren, mention, choose } = require('../utils')
+
 const rpStartWho = require('../embeds/rp-start-who')
 const rpStartNumPlayers = require('../embeds/rp-start-num')
 const rpStartCommunity = require('../embeds/rp-start-community')
+const rpStartSaga = require('../embeds/rp-start-saga')
 
 /**
  * Load a community page.
@@ -78,6 +80,21 @@ const getCommunity = async tale => {
 }
 
 /**
+ * Collect what stage of the saga this tale takes place in (if any).
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves when the tale has saved
+ *   which stage the saga is currently in (if any).
+ */
+
+const getSaga = async tale => {
+  const no = 'No, this tale does not belong to a saga.'
+  const options = [ ...stages, no ]
+  tale.channel.send({ embed: rpStartSaga(options) })
+  const sagaStage = await choose(tale, options, true)
+  if (sagaStage !== no) tale.saga = sagaStage
+}
+
+/**
  * Collect all of the information from players needed to begin a tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves when the tale begins.
@@ -87,6 +104,8 @@ const startTale = async tale => {
   try {
     await getPlayers(tale)
     await getCommunity(tale)
+    await getSaga(tale)
+    console.log(tale)
   } catch (err) {
     console.error(err)
     let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '

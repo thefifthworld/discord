@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { api } = require('./config.json')
+const { api, timeout } = require('./config.json')
 const { months, stages } = require('./data.json')
 
 /**
@@ -108,10 +108,69 @@ const mention = user => {
   }
 }
 
+/**
+ * Render an array of choices for a user to select from.
+ * @param {string[]} choices - An array of choices to choose from.
+ * @returns {string} - A string suitable for a MessageEmbed listing the
+ *   available choices.
+ */
+
+const renderChoices = choices => {
+  return choices.map((choice, index) => `**[${index + 1}]** ${choice}`).join('\n')
+}
+
+/**
+ * Tests if a string indicates one of the choices provided, either by copying
+ * the value of one of the strings, or by providing a number associated with
+ * one of them.
+ * @param {string} str - The string to test.
+ * @param {string[]} choices - An array of strings to choose from.
+ * @param {boolean=} returnString - If set to `true`, returns the string chosen
+ *   rather than the index of that string in the array. (Default: `false`)
+ * @returns {boolean|number|string} - Returns the index of the string chosen in
+ *   the `choices` array, or the string chosen if `returnString` equals `true`,
+ *   or `false` if given a `str` argument that does not refer to any of the
+ *   choices provided.
+ */
+
+const getChoice = (str, choices, returnString = false) => {
+  if (choices.includes(str)) return returnString ? str : choices.indexOf(str)
+  const i = parseInt(str)
+  if (!isNaN(i) && i > 0 && i <= choices.length) return returnString ? choices[i - 1] : i - 1
+  return false
+}
+
+/**
+ * Wait for a response to a question with numbered options.
+ * @param {Object} tale - The tale object.
+ * @param {string[]} choices - An array of choices.
+ * @param {boolean=} returnString - If set to `true`, returns the string chosen
+ *   rather than the index of that string in the array. (Default: `false`)
+ * @param {Object} user - If you provide an object that has an `id` property,
+ *   only responses from users who have that ID will be considered.
+ * @returns {Promise<number|string>} - The index of the choice selected in the
+ *   `choices` array, or the string itself is you set `returnString` to `true`.
+ */
+
+const choose = async (tale, choices, returnString, user) => {
+  try {
+    const filter = user && user.id
+      ? m => getChoice(m.content, choices) !== false && m.author.id === user.id
+      : m => getChoice(m.content, choices) !== false
+    const collected = await tale.channel.awaitMessages(filter, { max: 1, time: timeout })
+    return getChoice(collected.first().content, choices, returnString)
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   load,
   loadChildren,
   getPresent,
   initTale,
-  mention
+  mention,
+  renderChoices,
+  getChoice,
+  choose
 }
