@@ -89,7 +89,7 @@ const getCommunity = async tale => {
 const getSaga = async tale => {
   const no = 'No, this tale does not belong to a saga.'
   const options = [ ...stages, no ]
-  tale.channel.send({ embed: rpStartSaga(options) })
+  await tale.channel.send({ embed: rpStartSaga(options) })
   const sagaStage = await choose(tale, options, true)
   if (sagaStage !== no) tale.saga = sagaStage
 }
