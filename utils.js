@@ -39,8 +39,6 @@ const loadChildren = async (path, type, dataType) => {
 /**
  * Return the canonical "present" in the Fifth World (144,000 days, or one
  * bak'tun on the Maya calendar, from today).
- * @param {boolean=} asString - If set to `true`, returns a string representing
- *   the date, in the format `DD MONTHNAME YYYY`. (Default: `false`)
  * @returns {string|Date} - The canonical "present" in the Fifth World (144,000
  *   days, or one bak'tun on the Maya calendar, from today), as a `Date` object
  *   by default, or as a string if you set `asString` to `true`.
@@ -49,9 +47,17 @@ const loadChildren = async (path, type, dataType) => {
 const getPresent = (asString = false) => {
   const present = new Date()
   present.setDate(present.getDate() + 144000)
-  return asString
-    ? `${present.getDate()} ${months[present.getMonth()]} ${present.getFullYear()}`
-    : present
+  return present
+}
+
+/**
+ * Formats a date into a consistent `DD MONTHNAME YYYY` string.
+ * @param {Date} d - The date to format.
+ * @returns {string} - The date formatted to `DD MONTHNAME YYYY`.
+ */
+
+const formatDate = d => {
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
 /**
@@ -168,6 +174,7 @@ module.exports = {
   load,
   loadChildren,
   getPresent,
+  formatDate,
   initTale,
   mention,
   renderChoices,
