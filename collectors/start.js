@@ -23,6 +23,9 @@ const rpStartPlace = require('../embeds/rp-start-place')
 
 const charSheet = require('../embeds/sheet-char')
 const placeSheet = require('../embeds/sheet-place')
+const taleSheet = require('../embeds/sheet-tale')
+const loomingSheet = require('../embeds/sheet-looming')
+const cheatSheet = require('../embeds/sheet-cheat')
 
 /**
  * Create "traffic light" roles on the server if it doesn't yet have them.
@@ -338,6 +341,24 @@ const loopCharacterKnowledge = async tale => {
 }
 
 /**
+ * Post the tale summary, looming questions, and cheat sheets to the tale's
+ * channel, and pin them.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves once the tale summary,
+ *   looming questions, and cheat sheets have been posted and pinned to the
+ *   tale's channel.
+ */
+
+const pinEmbeds = async tale => {
+  tale.summary = await tale.channel.send({ embed: taleSheet(tale) })
+  tale.questions = await tale.channel.send({ embed: loomingSheet(tale) })
+  tale.cheat = await tale.channel.send({ embed: cheatSheet(tale) })
+  await tale.cheat.pin()
+  await tale.questions.pin()
+  await tale.summary.pin()
+}
+
+/**
  * Collect all of the information from players needed to begin a tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves when the tale begins.
@@ -351,12 +372,17 @@ const startTale = async tale => {
     await getSaga(tale)
     await loopPlayers(tale)
     await loopCharacterKnowledge(tale)
+    await pinEmbeds(tale)
   } catch (err) {
     console.error(err)
-    let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
-      ? err.message.substr(12)
-      : 'Sorry, I timed out waiting for a response.'
-    tale.channel.send(`${txt} You can start over again with the ritual phrase, “**Let us dream together of the world to come.**”`)
+    if (err.method === 'delete' && err.code === 50013) {
+      tale.channel.send('Sorry, I ran into an error because I don’t have sufficient permissions. Make sure that I belong to a role that appears above the red, yellow, and green roles on your server.')
+    } else {
+      let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
+        ? err.message.substr(12)
+        : 'Sorry, I timed out waiting for a response.'
+      tale.channel.send(`${txt} You can start over again with the ritual phrase, “**Let us dream together of the world to come.**”`)
+    }
   }
 }
 
