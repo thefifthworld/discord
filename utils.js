@@ -3,6 +3,27 @@ const { api, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
 /**
+ * Tests if given an array.
+ * @param {*} arr - The element to test.
+ * @returns {boolean} - `true` if given an array, or `false` if not.
+ */
+
+const isArray = arr => {
+  return arr && Array.isArray(arr)
+}
+
+/**
+ * Tests if given an array that has elements in it.
+ * @param {*} arr - The element to test.
+ * @returns {boolean} - `true` if given an array that has elements in it, or
+ *   `false` if not.
+ */
+
+const isPopulatedArray = arr => {
+  return isArray(arr) && arr.length > 0
+}
+
+/**
  * Return structured date of given `type` from a page.
  * @param {string} path - The path of the page to fetch.
  * @param {string} type - The type of the structured data to fetch from that
@@ -207,6 +228,8 @@ const calculateAge = (born, present) => {
 }
 
 module.exports = {
+  isArray,
+  isPopulatedArray,
   load,
   loadChildren,
   getPresent,
