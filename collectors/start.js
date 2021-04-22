@@ -1,11 +1,12 @@
 const { minPlayers, maxPlayers, stages } = require('../data.json')
 const { domain, timeout } = require('../config.json')
-const { load, loadChildren, mention, choose } = require('../utils')
+const { load, loadChildren, mention, choose, calculateAge } = require('../utils')
 
 const rpStartWho = require('../embeds/rp-start-who')
 const rpStartNumPlayers = require('../embeds/rp-start-num')
 const rpStartCommunity = require('../embeds/rp-start-community')
 const rpStartSaga = require('../embeds/rp-start-saga')
+const rpStartCharacter = require('../embeds/rp-start-character')
 
 /**
  * Load a community page.
@@ -106,6 +107,48 @@ const getSaga = async tale => {
 }
 
 /**
+ * Allow a player to choose a character.
+ * @param {Object} tale - The tale object.
+ * @param {User} player - The player.
+ * @returns {Promise<void>} - A Promise that resolves when the player has
+ *   chosen a character.
+ */
+
+const chooseCharacter = async (tale, player) => {
+  const available = tale.community.characters.filter(c => !c.claimed)
+  const choices = available.map(c => c.name)
+  await tale.channel.send({ content: `${mention(player)},`, embed: rpStartCharacter(choices) })
+  const index = await choose(tale, choices, false, player)
+  available[index].claimed = player.id
+  player.character = available[index]
+
+  const { character } = player
+  character.born = new Date(character.born)
+  const { stage, age } = calculateAge(character.born, tale.present)
+  character.age = age
+  character.stage = stage
+  character.awareness = 5
+}
+
+/**
+ * Loop through each player, giving each an opportunity to select hens
+ * character and place.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves when each player has
+ *   selected a character and a place.
+ */
+
+const loopPlayers = async tale => {
+  for (const player of tale.players) {
+    try {
+      await chooseCharacter(tale, player)
+    } catch (err) {
+      throw err
+    }
+  }
+}
+
+/**
  * Collect all of the information from players needed to begin a tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves when the tale begins.
@@ -116,6 +159,7 @@ const startTale = async tale => {
     await getPlayers(tale)
     await getCommunity(tale)
     await getSaga(tale)
+    await loopPlayers(tale)
   } catch (err) {
     console.error(err)
     let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
