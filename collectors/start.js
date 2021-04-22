@@ -19,6 +19,8 @@ const rpStartSaga = require('../embeds/rp-start-saga')
 const rpStartCharacter = require('../embeds/rp-start-character')
 const rpStartLooming = require('../embeds/rp-start-looming')
 
+const charSheet = require('../embeds/sheet-char')
+
 /**
  * Create "traffic light" roles on the server if it doesn't yet have them.
  * @param {Object} tale - The tale object.
@@ -206,7 +208,7 @@ const chooseCharacter = async (tale, player) => {
 
   try {
     character.questions = await getQuestions(tale, player)
-    console.log(character)
+    character.sheet = await player.send({ embed: charSheet(character) })
   } catch (err) {
     throw err
   }
