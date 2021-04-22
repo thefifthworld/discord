@@ -19,7 +19,24 @@ const loadCommunity = async tale => {
   const path = collected.first().content.substr(domain.length)
   const page = await load(path, 'Community')
   if (page) {
-    return page
+    const characters = await loadCharacters(page.path)
+    if (characters.length < tale.players.length) {
+      collected.first().reply(`${page.name} only has ${characters.length} characters available — not enough for a game with ${tale.players.length} players. Please choose a community with at least ${tale.players.length} characters to choose from.`)
+      return loadCommunity(tale)
+    } else {
+      const places = characters.flatMap(char => char.bonds.flatMap(bond => bond.path)).filter((p, i, arr) => arr.indexOf(p) === i)
+      if (places.length < tale.players.length) {
+        collected.first().reply(`${page.name} only has ${places.length} places to choose from — not enough for a game with ${tale.players.length} players. Please choose a community with at least ${tale.players.length} unqiues places with bonds to characters to choose from.`)
+        return loadCommunity(tale)
+      } else {
+        tale.community = {
+          name: page.name,
+          path: page.path,
+          characters,
+          questions: page.questions
+        }
+      }
+    }
   } else {
     collected.first().reply('That page doesn’t have the `Community` type. Can you give me a link to the community that you want to play?')
     return loadCommunity(tale)
@@ -70,13 +87,7 @@ const getPlayers = async tale => {
 
 const getCommunity = async tale => {
   tale.channel.send({ content: `Welcome, ${mention(tale.players)}!`, embed: rpStartCommunity() })
-  const data = await loadCommunity(tale)
-  tale.community = {
-    name: data.name,
-    path: data.path,
-    characters: await loadCharacters(data.path),
-    questions: data.questions
-  }
+  await loadCommunity(tale)
 }
 
 /**
