@@ -152,13 +152,14 @@ const getChoice = (str, choices, returnString = false) => {
  * @param {string[]} choices - An array of choices.
  * @param {boolean=} returnString - If set to `true`, returns the string chosen
  *   rather than the index of that string in the array. (Default: `false`)
- * @param {Object} user - If you provide an object that has an `id` property,
+ * @param {Object=} user - If you provide an object that has an `id` property,
  *   only responses from users who have that ID will be considered.
+ *   (Default: `null`)
  * @returns {Promise<number|string>} - The index of the choice selected in the
  *   `choices` array, or the string itself is you set `returnString` to `true`.
  */
 
-const choose = async (tale, choices, returnString, user) => {
+const choose = async (tale, choices, returnString = false, user = null) => {
   try {
     const filter = user && user.id
       ? m => getChoice(m.content, choices) !== false && m.author.id === user.id
