@@ -1,6 +1,7 @@
 const Discord = require('discord.js')
 const { colors, domain } = require('../config')
 const { cyclicPrinciples } = require('../data')
+const { formatDate } = require('../utils')
 
 /**
  * Describe the current state of a character's injuries.
@@ -81,7 +82,7 @@ const charSheet = (char) => {
   embed.setColor(colors['other'])
   embed.setTitle(name)
   embed.addFields(
-    { name: 'Born', value: born, inline: true },
+    { name: 'Born', value: formatDate(born), inline: true },
     { name: 'Age', value: `${age} (${stage.person})`, inline: true },
     { name: 'Cyclic Principle', value: `[${cyclicPrinciples[stage.stage].text}](${domain}${cyclicPrinciples[stage.stage].link})` },
     { name: 'Injuries', value: describeInjuries(body), inline: true },
