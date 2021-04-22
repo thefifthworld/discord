@@ -7,7 +7,9 @@ const {
   loadChildren,
   mention,
   choose,
-  calculateAge
+  calculateAge,
+  getMember,
+  markGreen
 } = require('../utils')
 
 const rpStartWho = require('../embeds/rp-start-who')
@@ -16,6 +18,18 @@ const rpStartCommunity = require('../embeds/rp-start-community')
 const rpStartSaga = require('../embeds/rp-start-saga')
 const rpStartCharacter = require('../embeds/rp-start-character')
 const rpStartLooming = require('../embeds/rp-start-looming')
+
+/**
+ * Create "traffic light" roles on the server if it doesn't yet have them.
+ * @param {Object} tale - The tale object.
+ */
+
+const createTrafficRoles = async tale => {
+  const roles = tale.channel.guild.roles.cache.array().map(r => r.name)
+  if (!roles.includes('red')) await tale.channel.guild.roles.create({ data: { name: 'red', color: 'RED', position: 100 } })
+  if (!roles.includes('yellow')) await tale.channel.guild.roles.create({ data: { name: 'yellow', color: 'YELLOW', position: 90 } })
+  if (!roles.includes('green')) await tale.channel.guild.roles.create({ data: { name: 'green', color: 'GREEN', position: 80 } })
+}
 
 /**
  * Load a community page.
@@ -178,6 +192,24 @@ const chooseCharacter = async (tale, player) => {
   character.age = age
   character.stage = stage
   character.awareness = 5
+
+  await markGreen(tale, player)
+  const member = await getMember(tale, player)
+  player.nicknameStorage = member.nickname
+  const pronouns = `${character.pronouns.subject.toLowerCase()}/${character.pronouns.object.toLowerCase()}`
+  try {
+    await member.setNickname(`${character.name} (${pronouns})`, `Currently playing ${character.name} in the Fifth World TTRPG`)
+  } catch {
+    delete player.nicknameStorage
+    tale.channel.send(`${mention(player)}, I couldn’t automatically update your nickname. You might want to change it to “**${character.name} (${pronouns})**” for the duration of the game, to help your fellow players remember the character you’ve selected.`)
+  }
+
+  try {
+    character.questions = await getQuestions(tale, player)
+    console.log(character)
+  } catch (err) {
+    throw err
+  }
 }
 
 /**
@@ -206,6 +238,7 @@ const loopPlayers = async tale => {
 
 const startTale = async tale => {
   try {
+    await createTrafficRoles(tale)
     await getPlayers(tale)
     await getCommunity(tale)
     await getSaga(tale)
