@@ -1,6 +1,6 @@
 const axios = require('axios')
 const { api, timeout } = require('./config.json')
-const { months, stages } = require('./data.json')
+const { months, stages, lifeStages } = require('./data.json')
 
 /**
  * Return structured date of given `type` from a page.
@@ -170,6 +170,41 @@ const choose = async (tale, choices, returnString, user) => {
   }
 }
 
+/**
+ * Calculate the character's age.
+ * @param {Date} born - A date representing when the character was born.
+ * @param {Date} present - A date representing the present.
+ * @returns {{stage: {name: string, person: string, code: string, max: number,
+ *   stage: string}|boolean, age: number}} - An object with two properties:
+ *   `age`, providing the character's age as of the given `present` in years,
+ *   and `stage`, and object with information pertaining to the character's
+ *   current stage of life. This latter object includes the name of this stage
+ *   (`name`, e.g., "Childhood," "Young Adulthood," etc.), what a person in
+ *   this stage of life is called (`person`, e.g., "Child," "Young Adult,"
+ *   etc.), the string used to identify this stage (`code`), the maximum age
+ *   that one can be and still count as being in this stage of life (`max`),
+ *   and the stage of the story that this stage of life correlates to (`stage`,
+ *   e.g., "Introduction," "Development," etc.).
+ */
+
+const calculateAge = (born, present) => {
+  const msInYear = 1000 * 60 * 60 * 24 * 365.2422
+  const age = Math.floor((present - born) / msInYear)
+  let stage = false
+  let i = 0
+  while (!stage) {
+    const match = lifeStages[i] && lifeStages[i].max && lifeStages[i].max > age
+    const noMax = lifeStages[i] && !lifeStages[i].max
+    const end = lifeStages[i] && !lifeStages[i + 1]
+    if (match || noMax || end) {
+      stage = lifeStages[i]
+    } else {
+      i++
+    }
+  }
+  return { stage, age }
+}
+
 module.exports = {
   load,
   loadChildren,
@@ -179,5 +214,6 @@ module.exports = {
   mention,
   renderChoices,
   getChoice,
-  choose
+  choose,
+  calculateAge
 }
