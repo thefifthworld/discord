@@ -3,6 +3,7 @@ const { domain, timeout } = require('../config.json')
 const {
   isArray,
   isPopulatedArray,
+  except,
   load,
   loadChildren,
   mention,
@@ -18,8 +19,10 @@ const rpStartCommunity = require('../embeds/rp-start-community')
 const rpStartSaga = require('../embeds/rp-start-saga')
 const rpStartCharacter = require('../embeds/rp-start-character')
 const rpStartLooming = require('../embeds/rp-start-looming')
+const rpStartPlace = require('../embeds/rp-start-place')
 
 const charSheet = require('../embeds/sheet-char')
+const placeSheet = require('../embeds/sheet-place')
 
 /**
  * Create "traffic light" roles on the server if it doesn't yet have them.
@@ -215,6 +218,52 @@ const chooseCharacter = async (tale, player) => {
 }
 
 /**
+ * Allow a player to choose a place.
+ * @param {Object} tale - The tale object.
+ * @param {User} player - The player.
+ * @returns {Promise<void>} - A Promise that resolves when the player has
+ *   chosen a place.
+ */
+
+const choosePlace = async (tale, player) => {
+  const places = player.character.bonds
+  const chosen = tale.players.filter(p => p.place && p.place.path).map(p => p.place.path)
+  const availablePaths = except(places.map(b => b.path), chosen)
+  const available = places.filter(p => availablePaths.includes(p.path))
+  if (available.length > 0) {
+    const availableNames = available.map(p => p.place)
+    tale.channel.send({ content: `${mention(player)},`, embed: rpStartPlace(availableNames) })
+    try {
+      const index = await choose(tale, availableNames, false, player)
+      const data = await load(available[index].path, 'Place')
+      player.place = {
+        name: data.name,
+        path: data.path,
+        criterion: data.criterion,
+        awareness: 1
+      }
+      player.place.sheet = await player.send({ embed: placeSheet(player.place) })
+
+      const preamble = 'The **criterion** establishes what someone must do to gather awareness from your place. This should require someone to act in accord with the spirit of the place.'
+      const specific = player.place.criterion
+        ? `Right now, ${player.place.name} has this criterion: “**${player.place.criterion}**” If this fits with your understanding of the spirit of the place, type **OK**. If not, write what criterion you’d like to use instead.`
+        : 'Your place does not currently have any criterion set. What should we use? Send it to me as a direct message, and I’ll update your place sheet.'
+      const dm = await player.send({ content: `${preamble} ${specific}` })
+      const collected = await dm.channel.awaitMessages(() => true, { max: 1, time: timeout })
+      const reply = collected.first().content
+      if (!(player.place.criterion && reply.substr(0, 2).toLowerCase() === 'ok')) {
+        player.place.criterion = reply
+        player.place.sheet.edit({ embed: placeSheet(player.place) })
+      }
+    } catch (err) {
+      throw err
+    }
+  } else {
+    throw new Error(`PASS ALONG: This game can’t work, because ${mention(player)} doesn’t have any places to choose from. Take a moment to consider the characters in this community and their bonds to see if you can find and agree on an arrangement that will give each player a character and a place that character has a bond with.`)
+  }
+}
+
+/**
  * Loop through each player, giving each an opportunity to select hens
  * character and place.
  * @param {Object} tale - The tale object.
@@ -226,6 +275,7 @@ const loopPlayers = async tale => {
   for (const player of tale.players) {
     try {
       await chooseCharacter(tale, player)
+      await choosePlace(tale, player)
     } catch (err) {
       throw err
     }
