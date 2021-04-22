@@ -227,6 +227,71 @@ const calculateAge = (born, present) => {
   return { stage, age }
 }
 
+/**
+ * Get the GuildMember object for a given user.
+ * @param {Object} tale - The tale object.
+ * @param {User|number} user - Either a User object or a user's ID number.
+ * @returns {Promise<GuildMember>} - A Promise that resolves with the
+ *   GuildMember object for a given User or user ID.
+ */
+
+const getMember = async (tale, user) => {
+  const uid = user && user.id ? user.id : user
+  return tale.channel.guild.members.fetch(user.id)
+}
+
+/**
+ * Return the "traffic light" roles on the tale's server.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<{green: Role, yellow: Role, red: Role}>} - A Promise that
+ *   resolves with an object containing the "traffic light" roles on the tale's
+ *   server.
+ */
+
+const getTrafficRoles = async (tale) => {
+  const roles = [ 'green', 'yellow', 'red' ]
+  const obj = {}
+  for (const r of roles) obj[r] = await tale.channel.guild.roles.cache.find(role => role.name === r)
+  return obj
+}
+
+/**
+ * Set the player's "traffic light" role to the one specified.
+ * @param {Object} tale - The tale object.
+ * @param {Object} player - The player object.
+ * @param {string=} color - Valid values are `red`, `yellow`, and `green`.
+ *   (Default: `green`)
+ * @returns {Promise<void>} - A Promise that resolves when the player has
+ *   been assigned the "green" role, and had any "yellow" or "red" role
+ *   assignment removed.
+ */
+
+const markTraffic = async (tale, player, color = 'green') => {
+  const member = await getMember(tale, player)
+  const { green, yellow, red } = await getTrafficRoles(tale)
+
+  if (green && yellow && red) {
+    let remove, add
+    if (color.toLowerCase() === 'red') {
+      remove = [yellow, green]
+      add = red
+    } else if (color.toLowerCase() === 'yellow') {
+      remove = [red, green]
+      add = yellow
+    } else {
+      remove = [red, yellow]
+      add = green
+    }
+
+    for (const role of remove) await member.roles.remove(role)
+    await member.roles.add(add)
+  }
+}
+
+const markGreen = async (tale, player) => markTraffic(tale, player, 'green')
+const markYellow = async (tale, player) => markTraffic(tale, player, 'yellow')
+const markRed = async (tale, player) => markTraffic(tale, player, 'red')
+
 module.exports = {
   isArray,
   isPopulatedArray,
@@ -239,5 +304,11 @@ module.exports = {
   renderChoices,
   getChoice,
   choose,
-  calculateAge
+  calculateAge,
+  getMember,
+  getTrafficRoles,
+  markTraffic,
+  markGreen,
+  markYellow,
+  markRed
 }
