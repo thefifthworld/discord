@@ -176,6 +176,40 @@ const getQuestions = async (tale, player) => {
 }
 
 /**
+ * Establishes what one player's character knows about another player's
+ * character. If the subject's character already knows something about the
+ * object's character, this publishes that knowledge to the channel. If not,
+ * it asks the subject what hen's character knows about the object's character.
+ * @param {Object} tale - The tale object.
+ * @param {Object} subject - The object for the player whose character knows
+ *   something about the object's character.
+ * @param {Object} object - The object for the player whose character the
+ *   subject's character knows something about.
+ * @returns {Promise<void>} - A Promise that resolves once we have established
+ *   and shared what the subject's character knows about the object's
+ *   character.
+ */
+
+const getKnowledgeAbout = async (tale, subject, object) => {
+  const pc = subject && subject.character ? subject.character : null
+  const oc = object && object.character ? object.character : null
+  if (pc && oc) {
+    if (!pc.knowledge) pc.knowledge = []
+    const knowledge = pc.knowledge.filter(k => k.subject === oc.path)
+    if (knowledge.length > 0) {
+      tale.channel.send(`${pc.name} knows this about ${oc.name}:\n${knowledge.map(k => k.statement).join('\n')}`)
+    } else {
+      await tale.channel.send({ content: `${mention(subject)}, what does ${pc.name} know about ${oc.name}? Phrase it as an independent statement (e.g., “${oc.name} makes great chili,” rather than, “${oc.pronouns.subject} makes great chili.”).` })
+      const collected = await tale.channel.awaitMessages(m => m.author.id === subject.id, { max: 1, time: timeout })
+      pc.knowledge.push({
+        statement: collected.first().content,
+        subject: oc.path
+      })
+    }
+  }
+}
+
+/**
  * Allow a player to choose a character.
  * @param {Object} tale - The tale object.
  * @param {User} player - The player.
@@ -283,6 +317,27 @@ const loopPlayers = async tale => {
 }
 
 /**
+ * Loop through each player, and for each player establish that hen's character
+ * knows something about each other player's character.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves once each player has
+ *   established that hen's character knows something about each other player's
+ *   character.
+ */
+
+const loopCharacterKnowledge = async tale => {
+  for (const player of tale.players) {
+    for (const other of tale.players.filter(p => p.id !== player.id)) {
+      try {
+        await getKnowledgeAbout(tale, player, other)
+      } catch (err) {
+        throw err
+      }
+    }
+  }
+}
+
+/**
  * Collect all of the information from players needed to begin a tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves when the tale begins.
@@ -295,6 +350,7 @@ const startTale = async tale => {
     await getCommunity(tale)
     await getSaga(tale)
     await loopPlayers(tale)
+    await loopCharacterKnowledge(tale)
   } catch (err) {
     console.error(err)
     let txt = err.message.substr(0, 12).toLowerCase() === 'pass along: '
