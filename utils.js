@@ -24,6 +24,22 @@ const isPopulatedArray = arr => {
 }
 
 /**
+ * Return a copy of an array that does not include any of the elements from a
+ * second array.
+ * @param {*[]} arr - An array of elements to filter.
+ * @param {*[]} exclude - An array of elements to filter out of `arr`.
+ * @returns {*[]} - A copy of `arr` from which any elements that appear in
+ *   `exclude` have been filtered out.
+ */
+
+const except = (arr, exclude) => {
+  const e = exclude.map(el => JSON.stringify(el))
+  return isArray(arr)
+    ? arr.filter(el => !e.includes(JSON.stringify(el)))
+    : []
+}
+
+/**
  * Return structured date of given `type` from a page.
  * @param {string} path - The path of the page to fetch.
  * @param {string} type - The type of the structured data to fetch from that
@@ -295,6 +311,7 @@ const markRed = async (tale, player) => markTraffic(tale, player, 'red')
 module.exports = {
   isArray,
   isPopulatedArray,
+  except,
   load,
   loadChildren,
   getPresent,
