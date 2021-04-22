@@ -1,12 +1,21 @@
 const { minPlayers, maxPlayers, stages } = require('../data.json')
 const { domain, timeout } = require('../config.json')
-const { load, loadChildren, mention, choose, calculateAge } = require('../utils')
+const {
+  isArray,
+  isPopulatedArray,
+  load,
+  loadChildren,
+  mention,
+  choose,
+  calculateAge
+} = require('../utils')
 
 const rpStartWho = require('../embeds/rp-start-who')
 const rpStartNumPlayers = require('../embeds/rp-start-num')
 const rpStartCommunity = require('../embeds/rp-start-community')
 const rpStartSaga = require('../embeds/rp-start-saga')
 const rpStartCharacter = require('../embeds/rp-start-character')
+const rpStartLooming = require('../embeds/rp-start-looming')
 
 /**
  * Load a community page.
@@ -57,6 +66,28 @@ const loadCharacters = async path => {
 }
 
 /**
+ * Keep waiting for a question until you get one.
+ * @param {Object} tale - The tale object.
+ * @param {User} player - The player.
+ * @returns {Promise<Object[]>} - A Promise that resolves with an array
+ *   containing the looming question that the player offered.
+ */
+
+const queryQuestions = async (tale, player) => {
+  const regex = /^(.*?)\? \((.*?)\)$/m
+  const filter = m => m.content.match(regex) !== null && m.author.id === player.id
+  const collected = await tale.channel.awaitMessages(filter, { max: 1, time: timeout })
+  const match = collected.first().content.match(regex)
+  if (isArray(match) && match.length > 2) {
+    const question = `${match[1]}?`
+    const answers = match[2].split('|').map(answer => ({ answer, moments: 0 }))
+    return [{ question, answers }]
+  } else {
+    await queryQuestions(tale, player)
+  }
+}
+
+/**
  * Collect who will play in this tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves once an appropriate
@@ -104,6 +135,25 @@ const getSaga = async tale => {
   await tale.channel.send({ embed: rpStartSaga(options) })
   const sagaStage = await choose(tale, options, true)
   if (sagaStage !== no) tale.saga = sagaStage
+}
+
+/**
+ * If the player's character already has questions, return them. If hen
+ * doesn't, query the player for a question.
+ * @param {Ojbect} tale - The tale object.
+ * @param {User} player - The player.
+ * @returns {Promise<Object[]>} - A Promise that resolves with an array of
+ *   looming questions for the player's character.
+ */
+
+const getQuestions = async (tale, player) => {
+  const { character } = player
+  if (character && isPopulatedArray(character.questions)) {
+    return character.questions
+  } else {
+    tale.channel.send({ content: `${mention(player)},`, embed: rpStartLooming(character.name) })
+    return queryQuestions(tale, player)
+  }
 }
 
 /**
