@@ -360,6 +360,17 @@ const pinEmbeds = async tale => {
 }
 
 /**
+ * Explain how to begin.
+ * @param {Object} tale - The tale object.
+ * @returns {Promise<void>} - A Promise that resolves when the bot has sent a
+ *   message explaining how to begin.
+ */
+
+const begin = async tale => {
+  await tale.channel.send(`${mention(tale.players)}, I’ve pinned those last three messages to this channel so you can easily refer back to them. I’ll keep them up to date as the tale goes on, and unpin them when the tale ends.\n\nHow does our tale begin? If you have an idea for an opening scene with your character, do that. If not, you can always start at home, with your characters discussing the questions looming over them.`)
+}
+
+/**
  * Collect all of the information from players needed to begin a tale.
  * @param {Object} tale - The tale object.
  * @returns {Promise<void>} - A Promise that resolves when the tale begins.
@@ -375,6 +386,7 @@ const startTale = async tale => {
     await loopCharacterKnowledge(tale)
     await pinEmbeds(tale)
     await setStage(tale, stages[0])
+    await begin(tale)
   } catch (err) {
     console.error(err)
     if (err.method === 'delete' && err.code === 50013) {
