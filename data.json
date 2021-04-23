@@ -1,4 +1,6 @@
 {
+  "minPlayers": 3,
+  "maxPlayers": 8,
   "agenda": [
     {
       "text": "See the Fifth World together.",
