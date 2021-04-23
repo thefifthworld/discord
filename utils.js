@@ -158,6 +158,19 @@ const getPlayer = (tale, user) => {
 }
 
 /**
+ * Get the GuildMember object for a given user.
+ * @param {Object} tale - The tale object.
+ * @param {User|number} user - Either a User object or a user's ID number.
+ * @returns {Promise<GuildMember>} - A Promise that resolves with the
+ *   GuildMember object for a given User or user ID.
+ */
+
+const getMember = async (tale, user) => {
+  const uid = user && user.id ? user.id : user
+  return tale.channel.guild.members.fetch(user.id)
+}
+
+/**
  * Creates a string to mention one or more users.
  * @param {User|User[]} user - A User object to create a mention for, or an
  *   array of User objects to create mentions for.
@@ -276,19 +289,6 @@ const calculateAge = (born, present) => {
 }
 
 /**
- * Get the GuildMember object for a given user.
- * @param {Object} tale - The tale object.
- * @param {User|number} user - Either a User object or a user's ID number.
- * @returns {Promise<GuildMember>} - A Promise that resolves with the
- *   GuildMember object for a given User or user ID.
- */
-
-const getMember = async (tale, user) => {
-  const uid = user && user.id ? user.id : user
-  return tale.channel.guild.members.fetch(user.id)
-}
-
-/**
  * Return the "traffic light" roles on the tale's server.
  * @param {Object} tale - The tale object.
  * @returns {Promise<{green: Role, yellow: Role, red: Role}>} - A Promise that
@@ -304,6 +304,22 @@ const getTrafficRoles = async (tale) => {
 }
 
 /**
+ * Clear all "traffic light" roles from a user.
+ * @param {Object} tale - The tale object.
+ * @param {Object} player - The player object.
+ * @returns {Promise<void>} - A Promise that resolves when all "traffic light"
+ *   roles have been removed from a user.
+ */
+
+const clearTraffic = async (tale, player) => {
+  const member = await getMember(tale, player)
+  const { green, yellow, red } = await getTrafficRoles(tale)
+  await member.roles.remove(green)
+  await member.roles.remove(yellow)
+  await member.roles.remove(red)
+}
+
+/**
  * Set the player's "traffic light" role to the one specified.
  * @param {Object} tale - The tale object.
  * @param {Object} player - The player object.
@@ -315,25 +331,10 @@ const getTrafficRoles = async (tale) => {
  */
 
 const markTraffic = async (tale, player, color = 'green') => {
+  await clearTraffic(tale, player)
   const member = await getMember(tale, player)
-  const { green, yellow, red } = await getTrafficRoles(tale)
-
-  if (green && yellow && red) {
-    let remove, add
-    if (color.toLowerCase() === 'red') {
-      remove = [yellow, green]
-      add = red
-    } else if (color.toLowerCase() === 'yellow') {
-      remove = [red, green]
-      add = yellow
-    } else {
-      remove = [red, yellow]
-      add = green
-    }
-
-    for (const role of remove) await member.roles.remove(role)
-    await member.roles.add(add)
-  }
+  const roles = await getTrafficRoles(tale)
+  await member.roles.add(roles[color])
 }
 
 const markGreen = async (tale, player) => markTraffic(tale, player, 'green')
@@ -351,13 +352,14 @@ module.exports = {
   initTale,
   getTale,
   getPlayer,
+  getMember,
   mention,
   renderChoices,
   getChoice,
   choose,
   calculateAge,
-  getMember,
   getTrafficRoles,
+  clearTraffic,
   markTraffic,
   markGreen,
   markYellow,
