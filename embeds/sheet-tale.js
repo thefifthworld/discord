@@ -1,6 +1,6 @@
 const Discord = require('discord.js')
 const { colors, domain } = require('../config')
-const { mention } = require('../utils')
+const { mention, formatDate } = require('../utils')
 
 /**
  * Return a string that represents the awareness that a "thing" has.
@@ -60,7 +60,7 @@ const taleSummary = tale => {
   embed.setTitle('Our Tale')
   embed.addFields(
     { name: 'Community', value: `[${tale.community.name}](${domain}${tale.community.path})` },
-    { name: 'Beginning', value: tale.present },
+    { name: 'Beginning', value: formatDate(tale.present) },
     { name: 'Main Characters', value: listPlayerStuff(tale, 'Character') },
     { name: 'Places', value: listPlayerStuff(tale, 'Place') },
     { name: stageName, value: stageValue }
