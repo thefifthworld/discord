@@ -126,6 +126,38 @@ const initTale = (guild, channel, state) => {
 }
 
 /**
+ * Return the tale from the given guild and channel.
+ * @param {Guild} guild - The guild object for the Discord server that the
+ *   channel belongs to.
+ * @param {Channel} channel - The channel object for the Discord channel
+ *   that this tale takes place in.
+ * @param {Object} state - The bot's state object.
+ * @returns {Object|null} - The tale object or `null` if it does not exist.
+ */
+
+const getTale = (guild, channel, state) => {
+  if (!guild || !guild.id || !channel || !channel.id) return null
+  return state[guild.id] && state[guild.id][channel.id]
+    ? state[guild.id][channel.id]
+    : null
+}
+
+/**
+ * Return the player object for the user given.
+ * @param {Object} tale - The tale object.
+ * @param {Object|number} user - This can be any object that has an `id`
+ *   property (such as the User object from Discord.js) or a number.
+ * @returns {Object|null} - The player object, or `null` if no matching
+ *   player could be found.
+ */
+
+const getPlayer = (tale, user) => {
+  const uid = user && user.id ? user.id : user
+  const filtered = tale.players.filter(p => p.id === user.id)
+  return filtered.length > 0 ? filtered[0] : null
+}
+
+/**
  * Creates a string to mention one or more users.
  * @param {User|User[]} user - A User object to create a mention for, or an
  *   array of User objects to create mentions for.
@@ -317,6 +349,8 @@ module.exports = {
   getPresent,
   formatDate,
   initTale,
+  getTale,
+  getPlayer,
   mention,
   renderChoices,
   getChoice,
