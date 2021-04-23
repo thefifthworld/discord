@@ -160,14 +160,14 @@ const getPlayer = (tale, user) => {
 /**
  * Get the GuildMember object for a given user.
  * @param {Object} tale - The tale object.
- * @param {User|number} user - Either a User object or a user's ID number.
+ * @param {User|string} user - Either a User object or a user's ID number.
  * @returns {Promise<GuildMember>} - A Promise that resolves with the
  *   GuildMember object for a given User or user ID.
  */
 
 const getMember = async (tale, user) => {
   const uid = user && user.id ? user.id : user
-  return tale.channel.guild.members.fetch(user.id)
+  return tale.channel.guild.members.fetch(uid)
 }
 
 /**
