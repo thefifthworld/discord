@@ -2,6 +2,7 @@ const charSheet = require('./embeds/sheet-char')
 const placeSheet = require('./embeds/sheet-place')
 const taleSheet = require('./embeds/sheet-tale')
 const loomingSheet = require('./embeds/sheet-looming')
+const cheatSheet = require('./embeds/sheet-cheat')
 
 /**
  * Update a character's sheet.
@@ -39,6 +40,7 @@ const updatePlaceSheet = async place => {
 const updateTaleSheets = async tale => {
   if (tale.summary) await tale.summary.edit({ embed: taleSheet(tale) })
   if (tale.questions) await tale.questions.edit({ embed: loomingSheet(tale) })
+  if (tale.cheat) await tale.cheat.edit({ embed: cheatSheet(tale) })
 }
 
 /**
