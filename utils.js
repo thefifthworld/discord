@@ -1,5 +1,6 @@
 const axios = require('axios')
-const { api, timeout } = require('./config.json')
+const Discord = require('discord.js')
+const { api, colors, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
 /**
@@ -143,9 +144,42 @@ const getTale = (guild, channel, state) => {
 }
 
 /**
+ * Return an array of tales that a player is currently playing in.
+ * @param {Object} state - The bot's current state.
+ * @param {Object|string} player - Either an object that has an `id` property
+ *   (for example, a Discord.js User object), or an ID string.
+ * @returns {{server: string, channel: string, tale: Object}[]} - An array of
+ *   objects representing tales that the player is currently involved in. The
+ *   `server` and `channel` properties provide human-readable names of the
+ *   Discord server and channel hosting the tale. The `tale` property provides
+ *   the tale object.
+ */
+
+const getTales = (state, player) => {
+  const uid = player && player.id ? player.id : uid
+  const tales = []
+  Object.keys(state).forEach(guild => {
+    Object.keys(state[guild]).forEach(channel => {
+      const hasPlayers = state[guild][channel] && isPopulatedArray(state[guild][channel].players)
+      if (hasPlayers) {
+        const { players } = state[guild][channel]
+        if (players.map(p => p.id).includes(uid)) {
+          tales.push({
+            server: state[guild].server.name,
+            channel: state[guild][channel].channel.name,
+            tale: state[guild][channel]
+          })
+        }
+      }
+    })
+  })
+  return tales
+}
+
+/**
  * Return the player object for the user given.
  * @param {Object} tale - The tale object.
- * @param {Object|number} user - This can be any object that has an `id`
+ * @param {Object|string} user - This can be any object that has an `id`
  *   property (such as the User object from Discord.js) or a number.
  * @returns {Object|null} - The player object, or `null` if no matching
  *   player could be found.
@@ -254,6 +288,41 @@ const choose = async (tale, choices, returnString = false, user = null) => {
 }
 
 /**
+ * Looks for the tales that a player is active in. If none exist, it sends a
+ * direct message to the user saying so. If just one is found, it's returned.
+ * If multiple tales are found, a direct message is sent to the player asking
+ * her to pick one. The tale that hen chooses is then returned.
+ * @param {Object} state - The bot's state.
+ * @param {User} player - The user who sent a request.
+ * @returns {Promise<Object|null>} - The tale object if it could be identified,
+ *   or null if no tale could be found.
+ */
+
+const queryTale = async (state, player) => {
+  const tales = getTales(state, player)
+  if (tales.length === 0) {
+    await player.send('Sorry, I couldn’t find any channels that have you listed as a player right now.')
+    return null
+  } else if (tales.length === 1) {
+    return tales[0].tale
+  } else {
+    const choices = tales.map(t => `${t.server} #${t.channel}`)
+    const embed = new Discord.MessageEmbed()
+    embed.setColor(colors.other)
+    embed.setTitle('Which tale do you mean?')
+    embed.setDescription(renderChoices(choices))
+    const dm = await player.send({ embed })
+    try {
+      const collected = await dm.channel.awaitMessages(m => getChoice(m.content, choices) !== false, { max: 1, time: timeout })
+      const index = getChoice(collected.first().content, choices)
+      return tales[index].tale
+    } catch {
+      return null
+    }
+  }
+}
+
+/**
  * Calculate the character's age.
  * @param {Date} born - A date representing when the character was born.
  * @param {Date} present - A date representing the present.
@@ -351,12 +420,14 @@ module.exports = {
   formatDate,
   initTale,
   getTale,
+  getTales,
   getPlayer,
   getMember,
   mention,
   renderChoices,
   getChoice,
   choose,
+  queryTale,
   calculateAge,
   getTrafficRoles,
   clearTraffic,
