@@ -367,7 +367,13 @@ const pinEmbeds = async tale => {
  */
 
 const begin = async tale => {
-  await tale.channel.send(`${mention(tale.players)}, I’ve pinned those last three messages to this channel so you can easily refer back to them. I’ll keep them up to date as the tale goes on, and unpin them when the tale ends.\n\nHow does our tale begin? If you have an idea for an opening scene with your character, do that. If not, you can always start at home, with your characters discussing the questions looming over them.`)
+  await tale.channel.send('I’ve pinned those last three messages to this channel so you can easily refer back to them. I’ll keep them up to date as the tale goes on, and unpin them when the tale ends.')
+  await tale.channel.send('We have a version of Peter Malmberg’s “traffic lights” for this game. This provides a secondary means of communicating how _you_ feel, distinct from the feelings of the character you play. You can learn more about the original system at https://blackfiskforlag.com/products/traffic-lights/. As we find ourselves on a Discord server here, we use roles. We’ve added each of you to the **green** role, which should match how you all feel right now at the start of the game. If not, you should stop the game to talk about that first. As the game progresses, though, you might need to change that role. You can do this by sending any of the messages below, either in this channel, or to me as a direct message.')
+  await tale.channel.send('`green`, :green_circle:, or :green_square: — **Green** means enthusiastic consent. You might portray a character in anguish, but you enjoy it and feel good about it.')
+  await tale.channel.send('`yellow`, :yellow_circle:, or :yellow_square: — **Yellow** means you have some concerns. We haven’t crossed a line yet, but we’ve gotten close. If you see someone go yellow, you might want to pull back.')
+  await tale.channel.send('`red`, :red_circle:, :red_square:, or :stop_sign: — **Red** means we’ve crossed a line. You don’t feel OK. Stop the game immediately and talk about what’s happened.')
+  await tale.channel.send('Also, don’t forget about the ritual phrase, “**I don’t see it.**” You can use this to veto the last thing said for any reason. It might introduce something that you find too upsetting to explore, or it might just not fit with your idea of the game’s tone, or your sense of verisimilitude. This ritual phrase can help shape a consistent tone for the game, or help it remain grounded and feeling real, but it can also serve as a safety tool. Don’t hesitate to use it. Early in a game in particular, it can help a group find the right space to play in.')
+  await tale.channel.send('With all of that out of the way, how does our tale begin? If you have an idea for an opening scene with your character, do that. If not, you can always start at home, with your characters discussing the questions looming over them.')
 }
 
 /**
