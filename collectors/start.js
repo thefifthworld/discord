@@ -1,5 +1,6 @@
 const { minPlayers, maxPlayers, stages } = require('../data.json')
 const { domain, timeout } = require('../config.json')
+const { setStage } = require('../sheets')
 const {
   isArray,
   isPopulatedArray,
@@ -373,6 +374,7 @@ const startTale = async tale => {
     await loopPlayers(tale)
     await loopCharacterKnowledge(tale)
     await pinEmbeds(tale)
+    await setStage(tale, stages[0])
   } catch (err) {
     console.error(err)
     if (err.method === 'delete' && err.code === 50013) {
