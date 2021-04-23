@@ -10,7 +10,7 @@ module.exports = {
     if (tale) {
       const sayer = getPlayer(tale, msg.author)
       sayer.nextStage = true
-      const votes = tale.players.map(p => p.nextStage)
+      const votes = tale.players.filter(p => p.nextStage === true)
       if (votes.length >= tale.players.length) {
         let { stage } = tale
         const curr = stages.indexOf(stage)
