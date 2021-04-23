@@ -187,7 +187,7 @@ const getTales = (state, player) => {
 
 const getPlayer = (tale, user) => {
   const uid = user && user.id ? user.id : user
-  const filtered = tale.players.filter(p => p.id === user.id)
+  const filtered = tale.players.filter(p => p.id === uid)
   return filtered.length > 0 ? filtered[0] : null
 }
 
