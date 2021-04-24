@@ -174,7 +174,7 @@ const getQuestions = async (tale, player) => {
   if (character && isPopulatedArray(character.questions)) {
     return character.questions
   } else {
-    tale.channel.send({ content: `${mention(player)},`, embed: rpStartLooming(character.name) })
+    await tale.channel.send({ content: `${mention(player)},`, embed: rpStartLooming(character.name) })
     return queryQuestions(tale, player)
   }
 }
