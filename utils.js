@@ -192,6 +192,20 @@ const getPlayer = (tale, user) => {
 }
 
 /**
+ * Return the object for a character in a tale with a given name.
+ * @param {Object} tale - The tale object.
+ * @param {string} name - The name of the character that you'd like to find.
+ * @returns {Object|null} - The character object, or `null` if no matching
+ *   character could be found.
+ */
+
+const getCharacter = (tale, name) => {
+  const playersWithCharacter = tale.players.filter(p => Boolean(p.character))
+  const index = playersWithCharacter.map(p => p.character.name.toLowerCase()).indexOf(name.toLowerCase())
+  return index > -1 ? playersWithCharacter[index].character : null
+}
+
+/**
  * Get the GuildMember object for a given user.
  * @param {Object} tale - The tale object.
  * @param {User|string} user - Either a User object or a user's ID number.
@@ -478,6 +492,7 @@ module.exports = {
   getTale,
   getTales,
   getPlayer,
+  getCharacter,
   getMember,
   mention,
   renderChoices,
