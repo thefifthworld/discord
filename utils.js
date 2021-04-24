@@ -1,6 +1,6 @@
 const axios = require('axios')
 const Discord = require('discord.js')
-const { api, colors, timeout } = require('./config.json')
+const { api, colors, domain, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
 /**
@@ -96,6 +96,22 @@ const getPresent = (asString = false) => {
 
 const formatDate = d => {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+}
+
+/**
+ * Given a URL from the domain specified in the configuration, extract the
+ * path from that URL.
+ * @param {string} url - The URL to extract the path from.
+ * @returns {string|null} - If the URL provided is from the domain specified in
+ *   the configuration, this method returns the path of that URL. If not, it
+ *   returns `null`.
+ */
+
+const getPath = url => {
+  const index = url.indexOf(domain)
+  return index > -1
+    ? url.substr(index + domain.length)
+    : null
 }
 
 /**
@@ -508,6 +524,7 @@ module.exports = {
   loadChildren,
   getPresent,
   formatDate,
+  getPath,
   initTale,
   getTale,
   getTales,
