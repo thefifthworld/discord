@@ -12,9 +12,7 @@ const { months, stages, lifeStages } = require('./data.json')
  *   removed.
  */
 
-const deThe = str => {
-  return str.substr(0, 4).toLowerCase() === 'the' ? str.substr(4) : str
-}
+const deThe = str => str.substr(0, 4).toLowerCase() === 'the ' ? str.substr(4) : str
 
 /**
  * Tests if given an array.
