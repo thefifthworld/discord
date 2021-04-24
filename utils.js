@@ -280,7 +280,7 @@ const getCharacters = tale => {
 
 const getPlace = (tale, name) => {
   const places = getPlaces(tale)
-  const index = places.map(p => p.name.toLowerCase()).indexOf(name.toLowerCase())
+  const index = places.map(p => deThe(p.name).toLowerCase()).indexOf(deThe(name).toLowerCase())
   return index > -1 ? places[index] : null
 }
 
