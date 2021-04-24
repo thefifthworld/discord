@@ -295,7 +295,8 @@ const getMember = async (tale, user) => {
  */
 
 const getSubjects = tale => {
-  return [ tale.community, ...getCharacters(tale), ...getPlaces(tale) ]
+  if (!tale.subjects || !isArray(tale.subjects)) tale.subjects = []
+  return [ tale.community, ...getCharacters(tale), ...getPlaces(tale), ...tale.subjects ]
 }
 
 /**
@@ -312,6 +313,17 @@ const getSubjectPath = (subject, tale) => {
   const subjects = getSubjects(tale)
   const filtered = subjects.filter(s => s.name.toLowerCase() === subject.toLowerCase())
   return filtered.length > 0 ? filtered[0].path : null
+}
+
+/**
+ * Return an array of all looming questions in the game.
+ * @param {Object} tale - The tale object.
+ * @returns {Object[]} - An array of question objects.
+ */
+
+const getQuestions = tale => {
+  const subjects = getSubjects(tale)
+  return subjects.flatMap(s => s.questions)
 }
 
 /**
@@ -616,6 +628,7 @@ module.exports = {
   getMember,
   getSubjects,
   getSubjectPath,
+  getQuestions,
   mention,
   renderChoices,
   getChoice,
