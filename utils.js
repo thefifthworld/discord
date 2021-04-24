@@ -5,6 +5,18 @@ const { api, colors, domain, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
 /**
+ * If the given string begins with "The" (ignoring case), return the substring
+ * with the initial "The" removed.
+ * @param {string} str - The given string.
+ * @returns {string} - The given string with any initial "The" (ignoring case)
+ *   removed.
+ */
+
+const deThe = str => {
+  return str.substr(0, 4).toLowerCase() === 'the' ? str.substr(4) : str
+}
+
+/**
  * Tests if given an array.
  * @param {*} arr - The element to test.
  * @returns {boolean} - `true` if given an array, or `false` if not.
@@ -610,6 +622,7 @@ const markYellow = async (tale, player) => markTraffic(tale, player, 'yellow')
 const markRed = async (tale, player) => markTraffic(tale, player, 'red')
 
 module.exports = {
+  deThe,
   isArray,
   isPopulatedArray,
   except,
