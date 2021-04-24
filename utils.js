@@ -259,6 +259,21 @@ const getCharacters = tale => {
 }
 
 /**
+ * Return an array of places in this tale.
+ * @param {Object} tale - The tale object.
+ * @returns {Object[]} - An array of the places in this tale.
+ */
+
+const getPlaces = tale => {
+  if (tale && isArray(tale.players)) {
+    const playersWPlaces = tale.players.filter(p => Boolean(p.place))
+    return playersWPlaces.map(p => Object.assign({}, p.place, { player: p }))
+  } else {
+    return []
+  }
+}
+
+/**
  * Get the GuildMember object for a given user.
  * @param {Object} tale - The tale object.
  * @param {User|string} user - Either a User object or a user's ID number.
@@ -601,6 +616,7 @@ module.exports = {
   getPlayer,
   getCharacter,
   getCharacters,
+  getPlaces,
   getMember,
   getSubjects,
   getSubjectPath,
