@@ -685,6 +685,35 @@ const markGreen = async (tale, player) => markTraffic(tale, player, 'green')
 const markYellow = async (tale, player) => markTraffic(tale, player, 'yellow')
 const markRed = async (tale, player) => markTraffic(tale, player, 'red')
 
+/**
+ * Ask an attentive question.
+ * @param {Message} msg - The message received asking an attentive question.
+ * @param {Object} state - The current state of the bot.
+ * @returns {Promise<{tale: (Object|null), character: (Object|null),
+ *   place: (Object|null), ok: boolean}>} - An object with everything you need
+ *   to pay the awareness necessary to ask an attentive question. The `ok`
+ *   property lets you know if all necessary conditions are met.
+ */
+
+const askAttentiveQuestion = async (msg, state) => {
+  const tale = getTale(msg.channel.guild, msg.channel, state)
+  const player = getPlayer(tale, msg.author)
+  const { character } = player
+  let place = null
+  if (tale && player && character) {
+    place = await queryPlace(tale, {
+      title: 'Where do you find yourself?',
+      preamble: 'You’ve asked an **attentive question**. Pay a moment of awareness to one of the places below, and receive a true answer.',
+      content: `${mention(msg.author)},`,
+      user: msg.author,
+      elsewhere: true,
+      cancelable: true
+    })
+  }
+  const okChar = player && character && character.awareness && character.awareness > 0
+  return { tale, character, place, ok: Boolean(tale && okChar && place) }
+}
+
 module.exports = {
   deThe,
   isArray,
@@ -722,5 +751,6 @@ module.exports = {
   markTraffic,
   markGreen,
   markYellow,
-  markRed
+  markRed,
+  askAttentiveQuestion
 }
