@@ -563,9 +563,9 @@ const queryCharacter = async (tale, options) => {
  */
 
 const queryPlace = async (tale, options) => {
-  const { elsewhere, cancelable } = options
-  if (isPopulatedArray(tale.players)) {
-    const places = getPlaces(tale)
+  const places = getPlaces(tale)
+  if (isPopulatedArray(places)) {
+    const { elsewhere, cancelable } = options
     const names = places.map(p => p.name).filter(n => Boolean(n))
     if (elsewhere) names.push('A place not played in this tale')
     if (cancelable) names.push('Cancel')
