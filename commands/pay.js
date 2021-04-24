@@ -1,27 +1,33 @@
 const { getTale, getPlayer, getPlace, queryPlace, mention } = require('../utils')
-const outOfAwareness = require('../embeds/awareness-out')
-const charSheet = require('../embeds/sheet-char')
-const placeSheet = require('../embeds/sheet-place')
-const taleSummary = require('../embeds/sheet-tale')
+const pay = require('../pay')
 
 const regex = /pay (awareness|attention)( to (.*?)\.?\??$)?/mi
 
 /**
- * Handle a character paying awareness to a place.
- * @param {Object} character - The character object.
- * @param {Object} place - The place object.
+ * If given an identifiable place in the story, return it. If not, ask the
+ * author what place hen meant, and return that.
  * @param {Object} tale - The tale object.
- * @returns {Promise<void>} - A Promise that resolves once the awareness has
- *   been transferred and all relevant sheets have been updated.
+ * @param {string} str - The string entered by the author.
+ * @param {User} author - The User who sent the original message.
+ * @returns {Promise<Object|null>} - A Promise that resolves with the place
+ *   object for the place that the user indicated, or `null` if one could not
+ *   be identified.
  */
 
-const pay = async (character, place, tale) => {
-  character.awareness--
-  if (place && place.awareness) place.awareness++
-
-  if (character.sheet) await character.sheet.edit({ embed: charSheet(character) })
-  if (place.sheet) await place.sheet.edit({ embed: placeSheet(place) })
-  if (tale.summary) await tale.summary.edit({ embed: taleSummary(tale) })
+const retrievePlace = async (tale, str, author) => {
+  let place = getPlace(tale, str)
+  if (place) {
+    return place
+  } else {
+    return queryPlace(tale, {
+      title: 'What place do you want to pay awareness to?',
+      preamble: `I don’t know which place you meant by “**${str}**.” Please select one of the following:`,
+      content: `${mention(author)},`,
+      user: author,
+      elsewhere: true,
+      cancelable: true
+    })
+  }
 }
 
 module.exports = {
@@ -32,29 +38,11 @@ module.exports = {
     if (tale) {
       const match = msg.content.match(regex)
       if (match && match.length === 4 && match[3]) {
-        let place = getPlace(tale, match[3])
-        if (!place) {
-          place = await queryPlace(tale, {
-            title: 'What place do you want to pay awareness to?',
-            preamble: `I don’t know which place you meant by “**${match[3]}**.” Please select one of the following:`,
-            content: `${mention(msg.author)},`,
-            user: msg.author,
-            elsewhere: true,
-            cancelable: true
-          })
-        }
-
+        const place = await retrievePlace(tale, match[3], msg.author)
         if (place) {
           const player = getPlayer(tale, msg.author)
           const { character } = player
-          if (player && character) {
-            const { awareness } = character
-            if (awareness && awareness > 0) {
-              await pay(character, place, tale)
-            } else {
-              await msg.channel.send({ content: `${mention(msg.author)},`, embed: outOfAwareness() })
-            }
-          }
+          await pay(character, place, tale)
         }
       }
     }

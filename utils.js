@@ -585,7 +585,7 @@ const queryPlace = async (tale, options) => {
     if (cancelable) names.push('Cancel')
     const index = await queryChoice(tale.channel, names, options)
 
-    if (index > -1 && index <= places.length) {
+    if (index > -1 && index < places.length) {
       return places[index]
     } else if (elsewhere && index === places.length) {
       return 'ELSEWHERE'
