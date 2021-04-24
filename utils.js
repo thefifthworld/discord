@@ -295,11 +295,7 @@ const getMember = async (tale, user) => {
  */
 
 const getSubjects = tale => {
-  const playersWithChars = tale.players.filter(p => Boolean(p.character))
-  const playersWithPlaces = tale.players.filter(p => Boolean(p.place))
-  const chars = playersWithChars.map(p => ({ name: p.character.name, path: p.character.path }))
-  const places = playersWithPlaces.map(p => ({ name: p.place.name, path: p.place.path }))
-  return [ { name: tale.community.name, path: tale.community.path }, ...chars, ...places ]
+  return [ tale.community, ...getCharacters(tale), ...getPlaces(tale) ]
 }
 
 /**
