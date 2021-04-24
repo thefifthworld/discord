@@ -1,30 +1,7 @@
-const { getTale, mention, queryChoice, getPlayer, getCharacter } = require('../utils')
+const { getTale, mention, queryCharacter, getPlayer, getCharacter } = require('../utils')
 const charSheet = require('../embeds/sheet-char')
 
 const regex = /^(exhaust|bruise|cut|wound) (.*?)(\.|\!)?$/mi
-
-/**
- * Ask the player to specify which character hen meant to injure.
- * @param {object} tale - The tale object.
- * @param {User} player = The player who wanted to injure someone.
- * @param {string} name - The name given for the character to injure.
- * @param {string} type - The type of injury specified for the character.
- * @returns {Promise<object|boolean>} - A Promise that resolves with either the
- *   character object for the character selected, or `false` if the player
- *   chose to cancel the selection.
- */
-
-const requestCharacter = async (tale, player, name, type) => {
-  if (tale && tale.players && Array.isArray(tale.players)) {
-    const chars = tale.players.map(p => p.character).filter(c => Boolean(c))
-    const charNames = chars.map(c => c.name).filter(n => Boolean(n))
-    const title = `Who do you want to ${type.toLowerCase()}?`
-    const preamble = `We couldn’t tell for sure who you meant by “${name}.” Which of these characters do you want to ${type.toLowerCase()}?`
-    const options = { title, preamble, content: `${mention(player)},`, user: player, }
-    const index = await queryChoice(tale.channel, charNames, options)
-    return index <= charNames.length ? chars[index] : false
-  }
-}
 
 /**
  * Inflict an injury on a character.
@@ -38,9 +15,15 @@ const requestCharacter = async (tale, player, name, type) => {
 
 const injure = async (tale, player, name, type) => {
   let char = getCharacter(tale, name)
-  if (!char) char = await requestCharacter(tale, player, name, type)
+  if (!char) {
+    const title = `Who do you want to ${type.toLowerCase()}?`
+    const preamble = `We couldn’t tell for sure who you meant by “${name}.” Which of these characters do you want to ${type.toLowerCase()}?`
+    const options = { title, preamble, content: `${mention(player)},`, user: player, }
+    char = await queryCharacter(tale, options)
+  }
+
   if (char) {
-    if (!char.body) char.body
+    if (!char.body) char.body = {}
     if (type.toLowerCase() === 'exhaust') char.body.exhaustion = true
     if (type.toLowerCase() === 'bruise') char.body.bruises = true
     if (type.toLowerCase() === 'cut') char.body.cuts = true
