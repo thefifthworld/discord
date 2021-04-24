@@ -532,16 +532,32 @@ const queryTale = async (state, player) => {
  * @param {Object} tale - The tale object.
  * @param {Object} options - See the `options` parameter for the `queryChoice`
  *   method for full documentation.
- * @returns {Promise<Object|null>} - The character object chosen, or `null` if
- *   none could be found.
+ * @param {boolean} options.anon - If `true`, add another option to specify
+ *   no character in the tale. (Default: `false`)
+ * @param {boolean} options.cancelable - If `true`, add an option to allow the
+ *   user to cancel the selection.
+ * @returns {Promise<Object|string|null>} - The character object chosen, or the
+ *   string `SOMEONEELSE` if `options.anon` was set to `true` and the user
+ *   chose that option, or `null` if something went wrong or the user cancelled
+ *   the selection (if `options.cancelable` is `true`).
  */
 
 const queryCharacter = async (tale, options) => {
-  if (isPopulatedArray(tale.players)) {
-    const chars = getCharacters(tale)
+  const chars = getCharacters(tale)
+  if (isPopulatedArray(chars)) {
+    const { anon, cancelable } = options
     const names = chars.map(c => c.name).filter(n => Boolean(n))
+    if (anon) names.push('Someone else')
+    if (cancelable) names.push('Cancel')
     const index = await queryChoice(tale.channel, names, options)
-    return index <= chars.length ? chars[index] : null
+
+    if (index > -1 && index <= chars.length) {
+      return chars[index]
+    } else if (anon && index === chars.length) {
+      return 'SOMEONEELSE'
+    } else {
+      return null
+    }
   } else {
     return null
   }
