@@ -273,6 +273,22 @@ const getSubjects = tale => {
 }
 
 /**
+ * Find the path for a named subject in a tale. For example, if given the name
+ * of one of the main characters, this will return the path recorded for that
+ * character.
+ * @param {string} subject - The name of the subject.
+ * @param {object} tale - The object tale.
+ * @returns {string|null} - The path for the subject if it could be found in
+ *   the current tale, or `null` if it could not be found.
+ */
+
+const getSubjectPath = (subject, tale) => {
+  const subjects = getSubjects(tale)
+  const filtered = subjects.filter(s => s.name.toLowerCase() === subject.toLowerCase())
+  return filtered.length > 0 ? filtered[0].path : null
+}
+
+/**
  * Creates a string to mention one or more users.
  * @param {User|User[]} user - A User object to create a mention for, or an
  *   array of User objects to create mentions for.
@@ -571,6 +587,7 @@ module.exports = {
   getCharacter,
   getMember,
   getSubjects,
+  getSubjectPath,
   mention,
   renderChoices,
   getChoice,
