@@ -323,7 +323,8 @@ const getSubjectPath = (subject, tale) => {
 
 const getQuestions = tale => {
   const subjects = getSubjects(tale)
-  return subjects.flatMap(s => s.questions)
+  const subjectsWQs = subjects.filter(s => isArray(s.questions))
+  return subjectsWQs.flatMap(s => s.questions)
 }
 
 /**
