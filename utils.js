@@ -288,6 +288,62 @@ const choose = async (tale, choices, returnString = false, user = null) => {
 }
 
 /**
+ * Presents the user with an embed asking hen to make a choice, and then
+ * returns the index of the option chosen.
+ * @param {Channel} channel - The channel where the embed is posted and the
+ *   bot listens for a response.
+ * @param {string[]} choices - An array of strings to present as choices.
+ * @param {Object} options - An object containing options for how to handle
+ *   this exchange.
+ * @param {string} options.preamble - If provided, this text is printed in the
+ *   embed before the choices.
+ * @param {string} options.color - If provided, this is the color of the stripe
+ *   along the left side of the embed.
+ * @param {string} options.title - If provided, this is supplied as the title
+ *   of the embed. (Default: `Choose one`)
+ * @param {string} options.content - If provided, this is posted as textual
+ *   content along with the embed.
+ * @param {Object|string} options.user - If provided, restricts who can respond
+ *   to this particular user. This can be an object that has an `id` property
+ *   (as in the case of the Discord.js User object), or it can be a string with
+ *   a user's ID.
+ * @param {number} options.timeout - If provided, this becomes the timeout (in
+ *   milliseconds) that the collector will wait for a reply.
+ * @param {boolean} options.returnString - If set to `true`, returns the string
+ *   from the `choices` array chosen, rather than its index.
+ * @returns {Promise<number|string|null>} - A Promise that resolves with the
+ *   index of the option that the user chose, or the string that the user
+ *   chose if you set `option.returnString` to `true`, or `null` if not given
+ *   valid parameters.
+ */
+
+const queryChoice = async (channel, choices, options) => {
+  if (channel && isPopulatedArray(choices)) {
+    const render = renderChoices(choices)
+    const desc = options.preamble ? `${options.preamble}\n\n${render}` : render
+    const embed = new Discord.MessageEmbed()
+    embed.setColor(options.color || colors.other)
+    embed.setTitle(options.title || 'Choose one')
+    embed.setDescription(desc)
+    const msg = options.content ? { content: options.content, embed } : { embed }
+    await channel.send(msg)
+
+    try {
+      const uid = options.user && options.user.id ? options.user.id : options.user
+      const filter = uid
+        ? m => getChoice(m.content, choices) !== false && m.author.id === uid
+        : m => getChoice(m.content, choices) !== false
+      const collected = await channel.awaitMessages(filter, { max: 1, time: options.timeout || timeout })
+      return getChoice(collected.first().content, choices, options.returnString)
+    } catch (err) {
+      throw err
+    }
+  } else {
+    return null
+  }
+}
+
+/**
  * Looks for the tales that a player is active in. If none exist, it sends a
  * direct message to the user saying so. If just one is found, it's returned.
  * If multiple tales are found, a direct message is sent to the player asking
@@ -427,6 +483,7 @@ module.exports = {
   renderChoices,
   getChoice,
   choose,
+  queryChoice,
   queryTale,
   calculateAge,
   getTrafficRoles,
