@@ -1,5 +1,6 @@
 const Discord = require('discord.js')
 const { colors } = require('../config')
+const { isArray, getSubjects } = require('../utils')
 
 /**
  * Produce the embed for displaying the looming questions in this tale.
@@ -9,13 +10,11 @@ const { colors } = require('../config')
  */
 
 const loomingSheet = tale => {
-  if (!tale.subjects) tale.subjects = []
-  const subjects = [ tale.community, ...tale.players.map(player => player.character), ...tale.subjects ]
-
+  const subjectsWQs = getSubjects(tale).filter(s => isArray(s.questions))
   const embed = new Discord.MessageEmbed()
   embed.setColor(colors.other)
   embed.setTitle(`Looming Questions`)
-  subjects.forEach(subject => {
+  subjectsWQs.forEach(subject => {
     subject.questions.forEach(q => {
       const value = q.answers.map(a => {
         const moments = a.moments === 1 ? '1 moment' : `${a.moments} moments`
