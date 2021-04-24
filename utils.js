@@ -250,9 +250,9 @@ const getPlayer = (tale, user) => {
  */
 
 const getCharacter = (tale, name) => {
-  const playersWithCharacter = tale.players.filter(p => Boolean(p.character))
-  const index = playersWithCharacter.map(p => p.character.name.toLowerCase()).indexOf(name.toLowerCase())
-  return index > -1 ? playersWithCharacter[index].character : null
+  const chars = getCharacters(tale)
+  const index = chars.map(c => c.name.toLowerCase()).indexOf(name.toLowerCase())
+  return index > -1 ? chars[index] : null
 }
 
 /**
