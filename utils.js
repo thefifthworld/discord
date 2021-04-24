@@ -257,6 +257,22 @@ const getMember = async (tale, user) => {
 }
 
 /**
+ * Get the subjects at play in a tale (the community, the main characters, and
+ * the places played by the players in it).
+ * @param {object} tale - The tale object.
+ * @returns {{path: string, name: string}[]} - An array of subjects in the
+ *   given tale.
+ */
+
+const getSubjects = tale => {
+  const playersWithChars = tale.players.filter(p => Boolean(p.character))
+  const playersWithPlaces = tale.players.filter(p => Boolean(p.place))
+  const chars = playersWithChars.map(p => ({ name: p.character.name, path: p.character.path }))
+  const places = playersWithPlaces.map(p => ({ name: p.place.name, path: p.place.path }))
+  return [ { name: tale.community.name, path: tale.community.path }, ...chars, ...places ]
+}
+
+/**
  * Creates a string to mention one or more users.
  * @param {User|User[]} user - A User object to create a mention for, or an
  *   array of User objects to create mentions for.
@@ -554,6 +570,7 @@ module.exports = {
   getPlayer,
   getCharacter,
   getMember,
+  getSubjects,
   mention,
   renderChoices,
   getChoice,
