@@ -552,16 +552,32 @@ const queryCharacter = async (tale, options) => {
  * @param {Object} tale - The tale object.
  * @param {Object} options - See the `options` parameter for the `queryChoice`
  *   method for full documentation.
- * @returns {Promise<Object|null>} - The place object chosen, or `null` if none
- *   could be found.
+ * @param {boolean} options.elsewhere - If `true`, add another option to
+ *   specify no place in the tale. (Default: `false`)
+ * @param {boolean} options.cancelable - If `true`, add an option to allow the
+ *   user to cancel the selection.
+ * @returns {Promise<Object|string|null>} - The place object chosen, or the
+ *   string `ELSEWHERE` if `options.elsewhere` was set to `true` and the user
+ *   chose that option, or `null` if something went wrong or the user cancelled
+ *   the selection (if `options.cancelable` is `true`).
  */
 
 const queryPlace = async (tale, options) => {
+  const { elsewhere, cancelable } = options
   if (isPopulatedArray(tale.players)) {
     const places = getPlaces(tale)
     const names = places.map(p => p.name).filter(n => Boolean(n))
-    const index = await queryChoice(tale.channel, places, options)
-    return index <= places.length ? places[index] : null
+    if (elsewhere) names.push('A place not played in this tale')
+    if (cancelable) names.push('Cancel')
+    const index = await queryChoice(tale.channel, names, options)
+
+    if (index > -1 && index <= places.length) {
+      return places[index]
+    } else if (elsewhere && index === places.length) {
+      return 'ELSEWHERE'
+    } else {
+      return null
+    }
   } else {
     return null
   }
