@@ -538,10 +538,10 @@ const queryTale = async (state, player) => {
 
 const queryCharacter = async (tale, options) => {
   if (isPopulatedArray(tale.players)) {
-    const chars = tale.players.map(p => p.character).filter(c => Boolean(c))
-    const charNames = chars.map(c => c.name).filter(n => Boolean(n))
-    const index = await queryChoice(tale.channel, charNames, options)
-    return index <= charNames.length ? chars[index] : null
+    const chars = getCharacters(tale)
+    const names = chars.map(c => c.name).filter(n => Boolean(n))
+    const index = await queryChoice(tale.channel, names, options)
+    return index <= chars.length ? chars[index] : null
   } else {
     return null
   }
