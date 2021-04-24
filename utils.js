@@ -393,6 +393,26 @@ const queryTale = async (state, player) => {
 }
 
 /**
+ * Ask the player to choose a character from the given tale.
+ * @param {Object} tale - The tale object.
+ * @param {Object} options - See the `options` parameter for the `queryChoice`
+ *   method for full documentation.
+ * @returns {Promise<Object|null>} - The character object chosen, or `null` if
+ *   none could be found.
+ */
+
+const queryCharacter = async (tale, options) => {
+  if (isPopulatedArray(tale.players)) {
+    const chars = tale.players.map(p => p.character).filter(c => Boolean(c))
+    const charNames = chars.map(c => c.name).filter(n => Boolean(n))
+    const index = await queryChoice(tale.channel, charNames, options)
+    return index <= charNames.length ? chars[index] : null
+  } else {
+    return null
+  }
+}
+
+/**
  * Calculate the character's age.
  * @param {Date} born - A date representing when the character was born.
  * @param {Date} present - A date representing the present.
@@ -500,6 +520,7 @@ module.exports = {
   choose,
   queryChoice,
   queryTale,
+  queryCharacter,
   calculateAge,
   getTrafficRoles,
   clearTraffic,
