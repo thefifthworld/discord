@@ -262,7 +262,7 @@ const getCharacter = (tale, name) => {
 const getCharacters = tale => {
   if (tale && isArray(tale.players)) {
     const playersWChars = tale.players.filter(p => Boolean(p.character))
-    return playersWChars.map(p => Object.assign({}, p.character, { player: p }))
+    return playersWChars.map(p => p.character)
   } else {
     return []
   }
@@ -291,7 +291,7 @@ const getPlace = (tale, name) => {
 const getPlaces = tale => {
   if (tale && isArray(tale.players)) {
     const playersWPlaces = tale.players.filter(p => Boolean(p.place))
-    return playersWPlaces.map(p => Object.assign({}, p.place, { player: p }))
+    return playersWPlaces.map(p => p.place)
   } else {
     return []
   }
