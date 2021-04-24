@@ -1,5 +1,6 @@
 const axios = require('axios')
 const Discord = require('discord.js')
+const getUrls = require('get-urls')
 const { api, colors, domain, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
@@ -112,6 +113,27 @@ const getPath = url => {
   return index > -1
     ? url.substr(index + domain.length)
     : null
+}
+
+/**
+ * Parse URL paths from a string.
+ * @param {string} msg - The string we want to extract URL paths from.
+ * @returns {{path: (string|null), message: string}} - An object with two
+ *   properties. `message` provides the original message with all URLs stripped
+ *   out. `path` provides the path of the last URL in the original message that
+ *   came from the domain specified in the configuration.
+ */
+
+const parseURLs = msg => {
+  let message = msg
+  const urls = Array.from(getUrls(message))
+  let path = null
+  urls.forEach(url => {
+    const regex = new RegExp(url, 'gi')
+    message = message.replace(regex, '')
+    path = getPath(url)
+  })
+  return { path, message }
 }
 
 /**
@@ -525,6 +547,7 @@ module.exports = {
   getPresent,
   formatDate,
   getPath,
+  parseURLs,
   initTale,
   getTale,
   getTales,
