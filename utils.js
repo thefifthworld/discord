@@ -271,6 +271,20 @@ const getCharacters = tale => {
 }
 
 /**
+ * Return the object for a place in a tale with a given name.
+ * @param {Object} tale - The tale object.
+ * @param {string} name - The name of the place that you'd like to find.
+ * @returns {Object|null} - The place object, or `null` if no matching place
+ *   could be found.
+ */
+
+const getPlace = (tale, name) => {
+  const places = getPlaces(tale)
+  const index = places.map(p => p.name.toLowerCase()).indexOf(name.toLowerCase())
+  return index > -1 ? places[index] : null
+}
+
+/**
  * Return an array of places in this tale.
  * @param {Object} tale - The tale object.
  * @returns {Object[]} - An array of the places in this tale.
@@ -638,6 +652,7 @@ module.exports = {
   getPlayer,
   getCharacter,
   getCharacters,
+  getPlace,
   getPlaces,
   getMember,
   getSubjects,
