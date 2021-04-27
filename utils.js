@@ -715,6 +715,14 @@ const askAttentiveQuestion = async (msg, state) => {
 }
 
 /**
+ * Create a deep clone of a variable.
+ * @param {*} obj - The variable to clone.
+ * @returns {any} - A deep clone of the variable given.
+ */
+
+const clone = obj => JSON.parse(JSON.stringify(obj))
+
+/**
  * Return a random integer between 1 and 6 (inclusive), as you would get from
  * rolling a six-sided die.
  * @returns {number} - A random integer between 1 and 6 (inclusive).
@@ -761,5 +769,6 @@ module.exports = {
   markYellow,
   markRed,
   askAttentiveQuestion,
+  clone,
   roll
 }
