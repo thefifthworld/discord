@@ -730,6 +730,23 @@ const clone = obj => JSON.parse(JSON.stringify(obj))
 
 const roll = () => Math.floor(Math.random() * 6) + 1
 
+/**
+ * Shuffle an array (Fisher-Yates).
+ * @param {*[]}} arr - An array to shuffle.
+ * @returns {*[]} - A copy of the original array, with its elements randomized.
+ */
+
+const shuffle = arr => {
+  const cpy = clone(arr)
+  for (let i = cpy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = cpy[i]
+    cpy[i] = cpy[j]
+    cpy[j] = tmp
+  }
+  return cpy
+}
+
 module.exports = {
   deThe,
   isArray,
@@ -770,5 +787,6 @@ module.exports = {
   markRed,
   askAttentiveQuestion,
   clone,
-  roll
+  roll,
+  shuffle
 }
