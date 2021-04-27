@@ -714,6 +714,14 @@ const askAttentiveQuestion = async (msg, state) => {
   return { tale, character, place, ok: Boolean(tale && okChar && place) }
 }
 
+/**
+ * Return a random integer between 1 and 6 (inclusive), as you would get from
+ * rolling a six-sided die.
+ * @returns {number} - A random integer between 1 and 6 (inclusive).
+ */
+
+const roll = () => Math.floor(Math.random() * 6) + 1
+
 module.exports = {
   deThe,
   isArray,
@@ -752,5 +760,6 @@ module.exports = {
   markGreen,
   markYellow,
   markRed,
-  askAttentiveQuestion
+  askAttentiveQuestion,
+  roll
 }
