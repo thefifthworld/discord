@@ -5,14 +5,20 @@ const { api, colors, domain, timeout } = require('./config.json')
 const { months, stages, lifeStages } = require('./data.json')
 
 /**
- * If the given string begins with "The" (ignoring case), return the substring
- * with the initial "The" removed.
- * @param {string} str - The given string.
- * @returns {string} - The given string with any initial "The" (ignoring case)
- *   removed.
+ * Create a deep clone of a variable.
+ * @param {*} obj - The variable to clone.
+ * @returns {any} - A deep clone of the variable given.
  */
 
-const deThe = str => str.substr(0, 4).toLowerCase() === 'the ' ? str.substr(4) : str
+const clone = obj => JSON.parse(JSON.stringify(obj))
+
+/**
+ * Return a random integer between 1 and 6 (inclusive), as you would get from
+ * rolling a six-sided die.
+ * @returns {number} - A random integer between 1 and 6 (inclusive).
+ */
+
+const roll = () => Math.floor(Math.random() * 6) + 1
 
 /**
  * Tests if given an array.
@@ -36,6 +42,23 @@ const isPopulatedArray = arr => {
 }
 
 /**
+ * Shuffle an array (Fisher-Yates).
+ * @param {*[]}} arr - An array to shuffle.
+ * @returns {*[]} - A copy of the original array, with its elements randomized.
+ */
+
+const shuffle = arr => {
+  const cpy = clone(arr)
+  for (let i = cpy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = cpy[i]
+    cpy[i] = cpy[j]
+    cpy[j] = tmp
+  }
+  return cpy
+}
+
+/**
  * Return a copy of an array that does not include any of the elements from a
  * second array.
  * @param {*[]} arr - An array of elements to filter.
@@ -50,6 +73,16 @@ const except = (arr, exclude) => {
     ? arr.filter(el => !e.includes(JSON.stringify(el)))
     : []
 }
+
+/**
+ * If the given string begins with "The" (ignoring case), return the substring
+ * with the initial "The" removed.
+ * @param {string} str - The given string.
+ * @returns {string} - The given string with any initial "The" (ignoring case)
+ *   removed.
+ */
+
+const deThe = str => str.substr(0, 4).toLowerCase() === 'the ' ? str.substr(4) : str
 
 /**
  * Return structured date of given `type` from a page.
@@ -714,44 +747,14 @@ const askAttentiveQuestion = async (msg, state) => {
   return { tale, character, place, ok: Boolean(tale && okChar && place) }
 }
 
-/**
- * Create a deep clone of a variable.
- * @param {*} obj - The variable to clone.
- * @returns {any} - A deep clone of the variable given.
- */
-
-const clone = obj => JSON.parse(JSON.stringify(obj))
-
-/**
- * Return a random integer between 1 and 6 (inclusive), as you would get from
- * rolling a six-sided die.
- * @returns {number} - A random integer between 1 and 6 (inclusive).
- */
-
-const roll = () => Math.floor(Math.random() * 6) + 1
-
-/**
- * Shuffle an array (Fisher-Yates).
- * @param {*[]}} arr - An array to shuffle.
- * @returns {*[]} - A copy of the original array, with its elements randomized.
- */
-
-const shuffle = arr => {
-  const cpy = clone(arr)
-  for (let i = cpy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const tmp = cpy[i]
-    cpy[i] = cpy[j]
-    cpy[j] = tmp
-  }
-  return cpy
-}
-
 module.exports = {
-  deThe,
+  clone,
+  roll,
   isArray,
   isPopulatedArray,
+  shuffle,
   except,
+  deThe,
   load,
   loadChildren,
   getPresent,
@@ -785,8 +788,5 @@ module.exports = {
   markGreen,
   markYellow,
   markRed,
-  askAttentiveQuestion,
-  clone,
-  roll,
-  shuffle
+  askAttentiveQuestion
 }
