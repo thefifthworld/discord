@@ -85,6 +85,24 @@ const except = (arr, exclude) => {
 const deThe = str => str.substr(0, 4).toLowerCase() === 'the ' ? str.substr(4) : str
 
 /**
+ * Return an Oxford-comma-separated list of strings.
+ * @param {string[]} arr - An array of strings to list.
+ * @returns {string} - A string that lists the strings from the array separated
+ *   by commas, and, naturally, using an Oxford comma.
+ */
+
+const list = arr => {
+  if (arr.length === 0) return ''
+  let list = arr.pop()
+  if (arr.length === 1) {
+    list = `${arr[0]} and ${list}`
+  } else if (arr.length > 1) {
+    list = `${arr.join(', ')}, and ${list}`
+  }
+  return list
+}
+
+/**
  * Return structured date of given `type` from a page.
  * @param {string} path - The path of the page to fetch.
  * @param {string} type - The type of the structured data to fetch from that
@@ -397,14 +415,7 @@ const mention = user => {
   if (user && user.id) {
     return `<@!${user.id}>`
   } else if (Array.isArray(user)) {
-    const mentions = user.filter(u => Boolean(u.id)).map(u => mention(u))
-    let users = mentions.pop()
-    if (mentions.length === 1) {
-      users = `${mentions[0]} and ${users}`
-    } else if (mentions.length > 1) {
-      users = `${mentions.join(', ')}, and ${users}`
-    }
-    return users
+    return list(user.filter(u => Boolean(u.id)).map(u => mention(u)))
   } else {
     return ''
   }
@@ -755,6 +766,7 @@ module.exports = {
   shuffle,
   except,
   deThe,
+  list,
   load,
   loadChildren,
   getPresent,
