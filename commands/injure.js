@@ -1,5 +1,5 @@
 const { getTale, mention, queryCharacter, getPlayer, getCharacter } = require('../utils')
-const charSheet = require('../embeds/sheet-char')
+const { injureCharacter } = require('../injure')
 
 const regex = /^(exhaust|bruise|cut|wound) (.*?)(\.|\!)?$/mi
 
@@ -21,15 +21,7 @@ const injure = async (tale, player, name, type) => {
     const options = { title, preamble, content: `${mention(player)},`, user: player, }
     char = await queryCharacter(tale, options)
   }
-
-  if (char) {
-    if (!char.body) char.body = {}
-    if (type.toLowerCase() === 'exhaust') char.body.exhaustion = true
-    if (type.toLowerCase() === 'bruise') char.body.bruises = true
-    if (type.toLowerCase() === 'cut') char.body.cuts = true
-    if (type.toLowerCase() === 'wound') char.body.wounds = true
-    if (char.sheet) await char.sheet.edit({ embed: charSheet(char) })
-  }
+  await injureCharacter(char, type)
 }
 
 module.exports = {
