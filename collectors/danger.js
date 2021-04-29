@@ -1,6 +1,7 @@
 const { colors, timeout } = require('../config.json')
-const { queryChoice, mention, roll } = require('../utils')
+const { queryChoice, queryPlace, mention, roll } = require('../utils')
 const { injureCharacter, loseBodyPart } = require('../injure')
+const pay = require('../pay')
 const whoInDanger = require('../embeds/rp-dangerous-who')
 const dangerSuccess = require('../embeds/rp-dangerous-win')
 const dangerFail = require('../embeds/rp-dangerous-fail')
@@ -52,7 +53,8 @@ const queryPlayers = async (tale, invoker) => {
  *   something dangerous. `1` means hen has attempted something _very_
  *   dangerous.
  * @param {Object} body - The body object of the character facing the danger.
- * @returns {string[]}
+ * @returns {string[]} - An array of strings representing what a character
+ *   could risk, that involve greater danger than the current wager.
  */
 
 const assemblePossibleWagers = (level, body) => {
@@ -63,7 +65,104 @@ const assemblePossibleWagers = (level, body) => {
     if (body && !body.cuts) additional.push(CUTS)
     if (body && !body.wounds) additional.push(WOUNDS)
   }
-  return [ ...additional, LIFELIMB, CANCEL ]
+  return [ ...additional, LIFELIMB ]
+}
+
+/**
+ * Return an array of possible wagers that escalate from the wager given.
+ * @param {string} wager - An existing wager.
+ * @param {Object} body - The body object of the character facing the danger.
+ * @returns {string[]} - An array of strings representing what a character
+ *   could risk, that involve greater danger than the current wager.
+ */
+
+const assembleRiskierWagers = (wager, body) => {
+  const all = assemblePossibleWagers(0, body)
+  return all.slice(all.indexOf(wager) + 1)
+}
+
+/**
+ * Suffer the consequences of losing your wager.
+ * @param {Object} tale - The tale object.
+ * @param {Object} player - The player whose character has failed hens wager.
+ * @param {string} wager - What the character has put at risk (and now lost).
+ * @param {number} result - The die roll result.
+ * @returns {Promise<void>} - A Promise that resolves when the proper toll has
+ *   been taken, all appropriate sheets have been updated, and necessary
+ *   notifications have been sent.
+ */
+
+const suffer = async (tale, player, wager, result) => {
+  const content = `${mention(player)},`
+  if (wager === LIFELIMB && result > 1) {
+    const type = result === 2 ? 'arm/leg' : 'hand/foot'
+    const loss = await loseBodyPart(player.character, type)
+    await tale.channel.send({ content, embed: dangerFail(player.character, `missing ${loss}` )})
+  } else if (wager === LIFELIMB && result === 1) {
+    await tale.channel.send({ content, embed: death(player.character) })
+  } else {
+    await injureCharacter(player.character, wager)
+    await tale.channel.send({ content, embed: dangerFail(player.character, wager) })
+  }
+}
+
+/**
+ * Handle a failed roll, including offering the player the chance to roll again
+ * by escalating the risk or paying awareness.
+ * @param {Object} tale - The tale object.
+ * @param {Object} place - The place object.
+ * @param {Object} player - The player whose character has failed.
+ * @param {string} wager - What the character put at risk.
+ * @param {number} result - The result of the die roll.
+ * @returns {Promise<void>} - A Promise that resolves when the player has
+ *   chosen how to deal with hen's character's failure, and the consequences
+ *   have been meted out.
+ */
+
+const fail = async (tale, place, player, wager, result) => {
+  const escalations = assembleRiskierWagers(wager, player?.character?.body)
+  const awareness = player?.character?.awareness
+  if (escalations.length + awareness < 1) return suffer(tale, player, wager, result)
+
+  const payAwareness = 'Pay awareness'
+  const accept = 'Accept the consequences'
+  const options = [ ...escalations, payAwareness, accept ]
+  const displayOptions = [ ...escalations.map(w => `Risk ${w.toLowerCase()}`), payAwareness, accept ]
+  const by = escalations.length > 0 && awareness > 0
+    ? 'risk even more or pay awareness.'
+    : escalations.length > 0
+      ? 'risk even more'
+      : 'pay awareness'
+  const pick = await queryChoice(tale.channel, displayOptions, {
+    title: 'You face imminent pain and injury…',
+    preamble: `You risked ${wager.toLowerCase()} and rolled a ${result}. You can roll again, though, if you ${by}.`,
+    color: colors.red,
+    content: `${mention(player)},`,
+    user: player
+  })
+
+  if (pick < escalations.length) return rollDanger(tale, place, player, escalations[pick])
+  if (options[pick] === payAwareness) {
+    await pay(player.character, place, tale)
+    return rollDanger(tale, place, player, wager)
+  }
+  if (options[pick] === accept) return suffer(tale, player, wager, result)
+}
+
+/**
+ * Roll for danger and deal with the consequences.
+ * @param {Object} tale - The tale object.
+ * @param {Object} place - The place object.
+ * @param {Object} player - The player whose character has failed.
+ * @param {string} wager - What the character put at risk.
+ * @returns {Promise<Message|void>} - A Promise that resolves once the danger
+ *   has been faced and the consequences meted out.
+ */
+
+const rollDanger = async (tale, place, player, wager) => {
+  const d = roll()
+  if (d > 3) return tale.channel.send({ content: `${mention(player)},`, embed: dangerSuccess(player.character, wager) })
+  return fail(tale, place, player, wager, d)
 }
 
 /**
@@ -72,15 +171,16 @@ const assemblePossibleWagers = (level, body) => {
  * @param {number} level - `0` means the player's character has attempted
  *   something dangerous. `1` means hen has attempted something _very_
  *   dangerous.
+ * @param {Object} place - The place where this occurs.
  * @param {Object} player - The object of the player facing the danger.
- * @returns {Promise<void>} - A Promise that resolves once the player chooses
- *   how to face the danger, the dice have rolled, and the consequences have
- *   taken effect.
+ * @returns {Promise<Message>} - A Promise that resolves once the player
+ *   chooses how to face the danger, the dice have rolled, and the consequences
+ *   have taken effect.
  */
 
-const faceDanger = async (tale, level, player) => {
+const faceDanger = async (tale, level, place, player) => {
   const { character } = player
-  const wagers = assemblePossibleWagers(level, character.body)
+  const wagers = [ ...assemblePossibleWagers(level, character.body), CANCEL ]
   const wager = await queryChoice(tale.channel, wagers, {
     title: 'What will you risk?',
     preamble: level === 1
@@ -92,22 +192,7 @@ const faceDanger = async (tale, level, player) => {
     returnString: true
   })
 
-  if (wager !== CANCEL) {
-    const d = roll()
-    const content = `${mention(player)},`
-    if (d > 3) {
-      await tale.channel.send({ content, embed: dangerSuccess(player.character, wager) })
-    } else if (wager === LIFELIMB && d > 1) {
-      const type = d === 2 ? 'arm/leg' : 'hand/foot'
-      const loss = await loseBodyPart(player.character, type)
-      await tale.channel.send({ content, embed: dangerFail(player.character, `missing ${loss}` )})
-    } else if (wager === LIFELIMB && d === 1) {
-      await tale.channel.send({ content, embed: death(player.character) })
-    } else {
-      await injureCharacter(player.character, wager)
-      await tale.channel.send({ content, embed: dangerFail(player.character, wager) })
-    }
-  }
+  if (wager !== CANCEL) return rollDanger(tale, place, player, wager)
 }
 
 /**
@@ -122,9 +207,20 @@ const danger = async (tale, invoker) => {
   try {
     const level = await queryLevel(tale, invoker)
     if (level < 2) {
-      const players = await queryPlayers(tale, invoker)
-      for (const player of players) {
-        await faceDanger(tale, level, player)
+      const place = await queryPlace(tale, {
+        title: 'Where does this happen?',
+        preamble: 'If one of these people pays attention to escape danger, what place will hen pay awareness to?',
+        color: colors['ritual-phrases'],
+        content: `${mention(invoker)},`,
+        user: invoker,
+        elsewhere: true,
+        cancelable: true
+      })
+      if (place) {
+        const players = await queryPlayers(tale, invoker)
+        for (const player of players) {
+          await faceDanger(tale, level, place, player)
+        }
       }
     }
   } catch (err) {
