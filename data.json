@@ -1,4 +1,6 @@
 {
+  "minPlayers": 3,
+  "maxPlayers": 8,
   "agenda": [
     {
       "text": "See the Fifth World together.",
@@ -126,5 +128,33 @@
     "October",
     "November",
     "December"
+  ],
+  "injuries": {
+    "exhaustion": 1000,
+    "bruises": 1001,
+    "cuts": 1002,
+    "wounds": 1003
+  },
+  "bodyPartsPlural": {
+    "hand": "hands",
+    "foot": "feet",
+    "arm": "arms",
+    "leg": "legs",
+    "finger": "fingers",
+    "toe": "toes"
+  },
+  "allFingers": [
+    "Index",
+    "Middle",
+    "Ring",
+    "Pinky",
+    "Thumb"
+  ],
+  "allToes": [
+    "Big",
+    "Index",
+    "Middle",
+    "Fore",
+    "Pinky"
   ]
 }
