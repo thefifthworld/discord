@@ -4,6 +4,7 @@ const {
   getTale,
   getMember,
   getCharacters,
+  getPlaces,
   clearTraffic
 } = require('../utils')
 
@@ -60,6 +61,23 @@ const saveCharacters = async (tale, jwt) => {
   }
 }
 
+/**
+ * Loop through all of the places and save each one.
+ * @param {object} tale - The tale object.
+ * @param {string} jwt - The JWT token to be used to make the update.
+ * @returns {Promise<void>} - A Promise that resolves when all of the
+ *   places in the tale have been updated on the wiki.
+ */
+
+const savePlaces = async (tale, jwt) => {
+  const places = getPlaces(tale)
+  for (const place of places) {
+    await update(place.path, 'Place', obj => {
+      obj.criterion = place.criterion
+    }, jwt)
+  }
+}
+
 module.exports = {
   regex: /^so the story might one day go\.?$/gmi,
   description: 'Ends a tale.',
@@ -72,6 +90,7 @@ module.exports = {
 
       const res = await axios({ method: 'POST', url: `${api}/members/auth`, data: user })
       await saveCharacters(tale, res.data)
+      await savePlaces(tale, res.data)
 
       for (const player of tale.players) {
         await clearTraffic(tale, player)
