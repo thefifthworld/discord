@@ -13,6 +13,8 @@ commandFiles.forEach(file => {
 const state = {}
 
 client.once('ready', () => {
+  client.user.setStatus('online')
+  client.user.setActivity('%help')
   console.log('The Fifth World Discord bot is now running.')
 })
 
