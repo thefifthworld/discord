@@ -1,3 +1,4 @@
+const { MessageAttachment } = require('discord.js')
 const charSheet = require('./embeds/sheet-char')
 const placeSheet = require('./embeds/sheet-place')
 const taleSheet = require('./embeds/sheet-tale')
@@ -53,10 +54,18 @@ const updateTaleSheets = async tale => {
 
 const setStage = async (tale, stage) => {
   tale.stage = stage
-  let dashes = ''
-  for (let i = 0; i < Math.floor((40 - stage.length) / 2); i++) dashes += '⦾'
   await updateTaleSheets(tale)
-  await tale.channel.send(`${dashes} **${stage}** ${dashes}`)
+
+  const base = 'https://thefifthworld.s3.us-east-2.wasabisys.com/discord'
+  const banners = {
+    Introduction: 1,
+    Development: 2,
+    Contrast: 3,
+    Resolution: 4,
+    Endgame: 5
+  }
+  const attachment = new MessageAttachment(`${base}/stage${banners[stage]}.png`)
+  await tale.channel.send(attachment)
 }
 
 module.exports = {
