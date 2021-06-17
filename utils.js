@@ -131,6 +131,7 @@ const load = async (path, type) => {
 
 const loadChildren = async (path, type, dataType) => {
   const res = await axios({ method: 'GET', url: `${api}/pages?ancestor=${encodeURIComponent(path)}&type=${type}` })
+  if (!isPopulatedArray(res.data)) return []
   return res.data.map(page => {
     if (!isPopulatedArray(page?.data)) return null
     const filtered = page.data.filter(d => d.type === dataType)
