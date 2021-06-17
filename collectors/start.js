@@ -281,9 +281,9 @@ const choosePlace = async (tale, player) => {
       const index = await choose(tale, availableNames, false, player)
       const data = await load(available[index].path, 'Place')
       player.place = {
-        name: data.name,
-        path: data.path,
-        criterion: data.criterion,
+        name: data ? data.name : available[index].place,
+        path: data ? data.path : available[index].path,
+        criterion: data ? data.criterion : null,
         awareness: 1
       }
       player.place.sheet = await player.send({ embed: placeSheet(player.place) })
