@@ -1,7 +1,7 @@
 const Discord = require('discord.js')
 const { colors, domain } = require('../config')
 const { cyclicPrinciples, bodyPartsPlural, allFingers, allToes } = require('../data')
-const { list, except, formatDate } = require('../utils')
+const { list, except, formatDate, isPopulatedArray } = require('../utils')
 
 /**
  * Describe the condition of a limb. If describing an arm that's missing, say
@@ -102,7 +102,7 @@ const describeInjuries = body => {
   const injuryTypes = [ 'Exhaustion', 'Bruises', 'Cuts', 'Wounds' ]
   const injuries = injuryTypes.map(type => `${body[type.toLowerCase()] && body[type.toLowerCase()] === true ? '●' : '○'} ${type}`)
   const desc = [ injuries.join(' / '), ...describeMissingBodyParts(body) ]
-  return desc.join('\n')
+  return desc.length > 0 ? desc.join('\n') : 'None'
 }
 
 /**
@@ -133,7 +133,9 @@ const listBonds = bonds => {
  *   ready for display.
  */
 
-const listKnowledge = knowledge => knowledge ? knowledge.map(k => k.statement).join('\n') : '—'
+const listKnowledge = knowledge => knowledge && isPopulatedArray(knowledge)
+  ? knowledge.map(k => k.statement).join('\n')
+  : '—'
 
 /**
  * Return a string representing a character's awareness.
