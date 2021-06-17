@@ -113,6 +113,7 @@ const list = arr => {
 
 const load = async (path, type) => {
   const res = await axios({ method: 'GET', url: `${api}/pages${path}` })
+  if (!isPopulatedArray(res?.data?.data)) return null
   const filtered = res.data.data.filter(d => d.type === type)
   return filtered.length > 0 ? filtered[0] : null
 }
@@ -131,6 +132,7 @@ const load = async (path, type) => {
 const loadChildren = async (path, type, dataType) => {
   const res = await axios({ method: 'GET', url: `${api}/pages?ancestor=${encodeURIComponent(path)}&type=${type}` })
   return res.data.map(page => {
+    if (!isPopulatedArray(page?.data)) return null
     const filtered = page.data.filter(d => d.type === dataType)
     return filtered.length > 0 ? filtered[0] : null
   }).filter(page => page !== null)
