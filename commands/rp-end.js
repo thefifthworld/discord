@@ -5,7 +5,9 @@ const {
   getMember,
   getCharacters,
   getPlaces,
-  clearTraffic
+  clearTraffic,
+  isPopulatedArray,
+  formatDate
 } = require('../utils')
 
 /**
@@ -13,14 +15,17 @@ const {
  * @param {string} path - The path of the wiki entry to update.
  * @param {string} type - The type of the data to update.
  * @param {function} change - A function to execute on the matching datum.
+ * @param {object} defaultData - What to supply if the page has no structured
+ *   data yet.
  * @param {stirng} jwt - The JWT token to be used to make the update.
  * @returns {Promise<void>} - A Promise that resolves when the update has
  *   been made.
  */
 
-const update = async (path, type, change, jwt) => {
+const update = async (path, type, change, defaultData, jwt) => {
   const res = await axios({ method: 'GET', url: `${api}/pages${path}` })
-  const { page, data } = res.data
+  let { page, data } = res.data
+  if (!isPopulatedArray(data)) data = [ defaultData ]
   const dataMatch = data.filter(d => d.type === type)
   if (dataMatch && dataMatch.length > 0) {
     change(dataMatch[0])
@@ -57,6 +62,16 @@ const saveCharacters = async (tale, jwt) => {
       obj.body = char.body
       obj.knowledge = char.knowledge
       obj.questions = char.questions
+    }, {
+      type: 'Character',
+      name: char.name,
+      path: char.path,
+      born: formatDate(char.born),
+      pronouns: char.pronouns,
+      body: char.body,
+      bonds: char.bonds,
+      knowledge: char.knowledge,
+      questions: char.questions
     }, jwt)
   }
 }
@@ -74,6 +89,10 @@ const savePlaces = async (tale, jwt) => {
   for (const place of places) {
     await update(place.path, 'Place', obj => {
       obj.criterion = place.criterion
+    }, {
+      type: 'Place',
+      name: place.name,
+      path: place.path
     }, jwt)
   }
 }
