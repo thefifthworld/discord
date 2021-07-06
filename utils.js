@@ -113,6 +113,7 @@ const list = arr => {
 
 const load = async (path, type) => {
   const res = await axios({ method: 'GET', url: `${api}/pages${path}` })
+  if (!isPopulatedArray(res?.data?.data)) return null
   const filtered = res.data.data.filter(d => d.type === type)
   return filtered.length > 0 ? filtered[0] : null
 }
@@ -130,7 +131,9 @@ const load = async (path, type) => {
 
 const loadChildren = async (path, type, dataType) => {
   const res = await axios({ method: 'GET', url: `${api}/pages?ancestor=${encodeURIComponent(path)}&type=${type}` })
+  if (!isPopulatedArray(res.data)) return []
   return res.data.map(page => {
+    if (!isPopulatedArray(page?.data)) return null
     const filtered = page.data.filter(d => d.type === dataType)
     return filtered.length > 0 ? filtered[0] : null
   }).filter(page => page !== null)
@@ -393,12 +396,15 @@ const getSubjectPath = (subject, tale) => {
 /**
  * Return an array of all looming questions in the game.
  * @param {Object} tale - The tale object.
+ * @param {string[]} exclude -  An array of strings, each one presenting the
+ *   path of a subject whose questions should be excluded from the set of
+ *   questions returned (Default: `[]`).
  * @returns {Object[]} - An array of question objects.
  */
 
-const getQuestions = tale => {
+const getQuestions = (tale, exclude = []) => {
   const subjects = getSubjects(tale)
-  const subjectsWQs = subjects.filter(s => isArray(s.questions))
+  const subjectsWQs = subjects.filter(s => !exclude.includes(s.path) && isArray(s.questions))
   return subjectsWQs.flatMap(s => s.questions)
 }
 
